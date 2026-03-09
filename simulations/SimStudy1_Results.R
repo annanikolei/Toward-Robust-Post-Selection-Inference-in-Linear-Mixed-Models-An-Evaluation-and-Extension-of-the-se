@@ -14,58 +14,64 @@ source("SimStudy1_dgp.R")
 source("SimStudy1_one_simulation.R")
 source("SimStudy1_simulation_study.R")
 
-
+setwd("~/Post-selective inference/Project 1/Simulation Study 1 - problems with frequentist conditional/SimulationResults_new")
 ## Run Simulation
 
 N <- 3000  # Number of Iterations
 
-
-for(n_obs in c(990,4830)){
+for(n_obs in c(990, 4830)){
   
-  for(ICC_pseudo in c(0.05,0.25)){
-
-save_file <- paste0("Simulation_Study1_all_n=", n_obs,
-                                 "_ICC=", ICC_pseudo, ".RDS")
-
-
-if (file.exists(save_file)) {
-  results_list <- readRDS(save_file)
-  start_iter <- length(results_list) + 1
-  message("Continue with Iteration: ", start_iter)
-} else {
-  results_list <- list()
-  start_iter <- 1
-}
-
-for (i in start_iter:N) {
-  message("Iteration ", i, "/", N)
-  
-  res <- tryCatch(
-    {
-      SimStudy1_simulation_study(
-        perspective = c("marginal_not_efficient", "marginal", "conditional"),
-        n_iter = 1,
-        n_obs = n_obs,
-        ICC_pseudo = ICC_pseudo,
-        checkConvergence_for_check_Fun = TRUE,
-        ignore_singular_fits = TRUE,
-        seed = i
-      )
-    },
-    error = function(e) {
-      warning("Error in Iteration ", i, ": ", e$message)
-      return(NULL)
+  for(ICC_pseudo in c(0.05, 0.25)){
+    
+    save_file <- paste0(
+      "Simulation_Study1_all_n=", n_obs,
+      "_ICC=", ICC_pseudo, ".RDS"
+    )
+    
+    if (file.exists(save_file)) {
+      results_list <- readRDS(save_file)
+      start_iter <- length(results_list) + 1
+      message("Continue with Iteration: ", start_iter)
+    } else {
+      results_list <- list()
+      start_iter <- 1
     }
-  )
-  
-  results_list[[i]] <- res
-  
-  # nach jeder Iteration sichern
-  saveRDS(results_list, save_file)
-  
-   }
+    
+    # --- WICHTIGE FIX ---
+    if(start_iter > N){
+      message("File already finished: ", save_file)
+      next
+    }
+    
+    for (i in start_iter:N) {
+      message("Iteration ", i, "/", N)
+      
+      res <- tryCatch(
+        {
+          SimStudy1_simulation_study(
+            perspective = c("marginal_not_efficient", "marginal", "conditional"),
+            n_iter = 1,
+            n_obs = n_obs,
+            ICC_pseudo = ICC_pseudo,
+            checkConvergence_for_check_Fun = TRUE,
+            ignore_singular_fits = TRUE,
+            seed = i
+          )
+        },
+        error = function(e) {
+          warning("Error in Iteration ", i, ": ", e$message)
+          return(NULL)
+        }
+      )
+      
+      results_list[[i]] <- res
+      
+      # Nach jeder Iteration speichern
+      saveRDS(results_list, save_file)
+    }
   }
 }
+
 
 
 
