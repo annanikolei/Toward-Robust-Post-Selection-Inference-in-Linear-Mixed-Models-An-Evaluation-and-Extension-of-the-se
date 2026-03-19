@@ -211,7 +211,7 @@ estimator_colors <- c(
 
 
 results_all_conditions_df_SimStudy4 <- 
-  results_all_conditions_df[results_all_conditions_df$perspective %in% c("Marginal (not eff)","Marginal (not eff) HC3"),]
+  results_all_conditions_df[results_all_conditions_df$perspective %in% c("Marginal (not eff) HC3"),]
 
 
 
