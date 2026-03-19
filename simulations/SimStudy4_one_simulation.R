@@ -4,9 +4,6 @@
 
 library(performance)
 library(clubSandwich)
-setwd("~/Documents/Forschung/Post-selection inference/Masterarbeit/selfmade package nachprogrammieren/GitHub_selective_inference")
-source("Hauptfunktion (analog zur mocasin Funktion).R")
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /Simulation Study 4 - selection of random effects")
 
 ####################### one_simulation function ################################
 
