@@ -19,7 +19,7 @@ R_squared = 0.3
 n_obs = 40^2 ; m = 40
 
 # load fixed predictor matriced
-dgp_X_output <- readRDS("~/dgp_X_output_n_obs=1600_m=40.RDS")
+dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
 load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
@@ -48,7 +48,7 @@ SelFun <- function(dat, full_model) {
 # Number of planned iterations
 N <- 1000
 
-# Speicherort
+
 save_file <- paste0(
   "Discussion_SimulationStudy4_fixing_the_random_effects_structure_500MC.RDS"
 )
@@ -93,10 +93,9 @@ for (i in start_iter:N) {
       return(NULL)
     })
   
-  # Ergebnis speichern, NULL wird auch abgelegt um nichts zu verlieren
   results_list[[i]] <- res
   
-  # Jede Iteration sofort sichern
+
   saveRDS(results_list, save_file)
 }
 
