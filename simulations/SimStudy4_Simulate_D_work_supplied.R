@@ -124,7 +124,7 @@ list_supplied_D_work <- lapply(Simulation_supplied_D, function(model_list) {
 list_convergence <- lapply(Simulation_supplied_D[["R_squared = 0.3"]], function(x) x$counter_convergence_issues)
 list_singular<- lapply(Simulation_supplied_D[["R_squared = 0.3"]], function(x) x$counter_singular_issues)
 
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /Simulation Study 4 - selection of random effects/SimulationResults_supplied_D")
+setwd("~/SimulationResults_supplied_D")
 
 save(list_supplied_D_work, 
      file = "list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
@@ -136,4 +136,4 @@ save(list_singular,
      file = "singularIssues_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
 
 
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /Simulation Study 4 - selection of random effects")
+
