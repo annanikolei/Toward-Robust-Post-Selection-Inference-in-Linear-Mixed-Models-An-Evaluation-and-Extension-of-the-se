@@ -274,7 +274,7 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   ### Marginal perspective (not efficient)
   if (c("marginal_not_efficient") %in%  perspective) {
     
-  if(!balanced){ stop("Schätzung der clustered errors geht von balanciertem Design aus.")}
+  if(!balanced){stop("Estimation of clustered errors assumes a balanced design.")}
     
   if(R_diag == T){
     SIGMA <- 
@@ -330,13 +330,13 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   
   
   #-----------------------------------------------------------------------------
-#### Testvektor v bzw. vt, Varianz der Teststatistik und dirV
+#### Testvector v  and vt, Variance of test statistic and dirV
   #-----------------------------------------------------------------------------
 
   
 ## marginal efficient 
   if(c("marginal") %in% perspective) {
-    # Falls which_marginal nicht spezifiziert ist, teste alle Koeffizienten                     #?# oder vielleicht 2:ncol wegen des Intercepts?
+    # if which_marginal not specified, test all coefficients                  
     if(is.null(which_marginal)){which_marginal <- 1:ncol(X_A_work)}
     
     testvec_marginal_list <- testvec_marginal(
@@ -352,7 +352,7 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   
 ## marginal not efficient 
   if(c("marginal_not_efficient") %in% perspective) {
-    # Falls which_marginal nicht spezifiziert ist, teste alle Koeffizienten                     #?# oder vielleicht 2:ncol wegen des Intercepts?
+     # if which_marginal not specified, test all coefficients    
     if(is.null(which_marginal)){which_marginal <- 1:ncol(X_A_work)}
     
     testvec_marginal_not_efficient_list <- testvec_marginal_not_efficient(
@@ -366,7 +366,7 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
 ## conditional 
   if(c("conditional") %in% perspective) {
     
-  # Falls which_conditional nicht spezifiziert ist, teste alle Koeffizienten
+  #  # if which_conditional not specified, test all coefficients    
     if(is.null(which_conditional)){
       which_conditional <- 1:ncol(K_inv.Ct.R_inv_C_block$C_block)}
     
