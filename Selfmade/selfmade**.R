@@ -5,7 +5,7 @@
 source("helper_functions.R")
 source("CR-Standard_errors.R") # not important
 source("CovarianceMatrix-Function.R")
-source("parallel_selective-inference-Function.R")
+source("parallel_selective-inference-Function.R") # or selective-inference-Function.R
 source("Testvector-Function.R")
 
 mocasin <- function(mod, # fit des selektierten Modell
