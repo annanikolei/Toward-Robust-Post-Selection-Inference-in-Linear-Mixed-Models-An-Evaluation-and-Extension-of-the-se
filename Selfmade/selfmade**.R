@@ -382,27 +382,29 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
     
   }
   
-  
+
 #-------------------------------------------------------------------------------
-#### Berechnung der selective inference Outputs
+#### Computation of selective inference outputs
 #-------------------------------------------------------------------------------
-  
-# einzeln für marginal/conditional (COV_estimator, bayesian/not_bayesian, which)
-# die Berechnung der selective-inference p-Werte und selective-inference-KIs
-# mithilfe der selective_inference-Funktion (einem der anderen Skripte)
-  
-# als MCdistribution sollte bei nicht-symmetrischem selection event die centered
-# distribution gewählt werden.
-# bei symmetrischem selection event die propsal
-# distribution, wenn nicht anders angegeben. 
-if(is.null(MC_distribution)){
-  if(symmetric_selection == T) {MC_distribution <- "proposal"}
-  else if(symmetric == F){MC_distribution <- "centered"}
+
+# Separately for marginal / conditional perspective (COV_estimator, bayesian/not_bayesian, which)
+# Compute selective inference p-values and confidence intervals
+# using the selective_inference function 
+
+# Choice of MC distribution:
+# - For non-symmetric selection events: use the "centered" distribution
+# - For symmetric selection events: use the "proposal" distribution (default)
+if (is.null(MC_distribution)) {
+  if (symmetric_selection == TRUE) {
+    MC_distribution <- "proposal"
+  } else if (symmetric_selection == FALSE) {
+    MC_distribution <- "centered"
+  }
 }
-  
-# Erstelle Liste mit Listenelementen bezüglich der perspective also mit einem
-# Listenelement $marginal und einem $conditional
-selinf_results_list <- setNames(vector("list",length(perspective)),perspective)
+
+# Create a list to store results for each perspective
+# The list will contain elements named "marginal" and/or "conditional"
+selinf_results_list <- setNames(vector("list", length(perspective)), perspective)
   
 ## marginal
 if("marginal" %in% perspective){
@@ -410,15 +412,15 @@ if("marginal" %in% perspective){
     lapply(marginal_COV_estimator, function(iestimator){
         lapply(which_marginal, function(iwhich){
           
-          # Namen der Koeffizienten
+          # names of coefficients
           coef_name <- paste("coefficient", iwhich)
           
-    ## Input für selective_inference          
-          # welcher Testvektor vt:
+    ## Input for selective_inference          
+          # which vt:
           vt = testvec_marginal_list$vt_marginal_list[[iestimator]][[coef_name]]
-          # welche Varianz kappa_square der Teststatistik
+          # which variance kappa_square
           kappa_square = testvec_marginal_list$kappa_square_marginal_list[[iestimator]][[coef_name]]
-          # welche dirV
+          # which dirV
           dirV = testvec_marginal_list$dirV_marginal_list[[iestimator]][[coef_name]]
           
           
@@ -454,15 +456,15 @@ if("marginal_not_efficient" %in% perspective){
     lapply(marginal_not_efficient_COV_estimator, function(iestimator){
       lapply(which_marginal, function(iwhich){
         
-        # Namen der Koeffizienten
+        # names of coefficients
         coef_name <- paste("coefficient", iwhich)
         
-        ## Input für selective_inference          
-        # welcher Testvektor vt:
+        ## Input for selective_inference          
+        # which vt:
         vt = testvec_marginal_not_efficient_list$vt_marginal_not_efficient_list[[iestimator]][[coef_name]]
-        # welche Varianz kappa_square der Teststatistik
+        # which variance kappa_square
         kappa_square = testvec_marginal_not_efficient_list$kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]]
-        # welche dirV
+        # which dirV
         dirV = testvec_marginal_not_efficient_list$dirV_marginal_not_efficient_list[[iestimator]][[coef_name]]
         
         
@@ -500,17 +502,17 @@ if("conditional" %in% perspective){
        lapply(bayesian, function(ibayesian){
         lapply(which_conditional, function(iwhich){
           
-           # Namen der Koeffizienten 
+           # names of coefficients
            coef_name <- paste("coefficient", iwhich)
           
-    ## Input für selective_inference
-           # welcher Testvektor
+    ## Input for selective_inference
+           # which vt
            vt = 
            testvec_conditional_list$vt_conditional_list[[iestimator]][[coef_name]]
-           # welche Varianz kappa_square der Teststatistik
+           # which variance kappa_square
            kappa_square = 
            testvec_conditional_list$kappa_square_conditional_list[[iestimator]][[ibayesian]][[coef_name]]
-           # welche dirV
+           # which dirV
            dirV = 
            testvec_conditional_list$dirV_conditional_list[[iestimator]][[ibayesian]][[coef_name]]
            
@@ -543,7 +545,7 @@ if("conditional" %in% perspective){
   
   
 #-------------------------------------------------------------------------------
-#### Output ausgeben
+#### Return output
 #-------------------------------------------------------------------------------
   
 return(selinf_results_list)
