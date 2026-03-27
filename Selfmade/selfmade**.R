@@ -110,11 +110,9 @@ Lambdat_work_est <- getME(mod, "Lambdat") # = t(Lambda_work_est)
 G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
 
   
-  #-----------------------------------------------------------------------------
-#### Aufstellen der gegebenen oder Schätzung der (inversen) Kovarianzmatrizen
-  #-----------------------------------------------------------------------------
-  # Falls eine der beiden Perspektiven marginal oder conditional nicht angegeben
-  # ist, setze default-Wert der COV_estimator auf NULL
+#-----------------------------------------------------------------------------
+#### Construct or estimate the (inverse) covariance matrices
+#-----------------------------------------------------------------------------
   
   if(!("marginal" %in% perspective)){
     marginal_COV_estimator <- NULL
@@ -130,7 +128,6 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
     conditional_COV_estimator <- NULL
   }
   
-  # Welche Schätzer müssen berechnet werden
   if(!is.null(marginal_COV_estimator)){
    marginal_COV_estimator <- match.arg(marginal_COV_estimator,
                                       c("ModelEstimate", 
@@ -163,7 +160,7 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
   
   
   
-## Vorab: Berechnung von R,R_invers,für die verschiedenen Schätzer--------------
+## Calculation of R,R_invers for the different estimators --------------
   
   fit_ICM <- NULL
   Sigma_ICM <- NULL
