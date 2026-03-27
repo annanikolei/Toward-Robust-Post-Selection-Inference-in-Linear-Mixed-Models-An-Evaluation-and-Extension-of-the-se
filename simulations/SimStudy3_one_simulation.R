@@ -3,11 +3,7 @@
 ################################################################################
 
 library(performance)
-library(clubSandwich)
-setwd("~/Documents/Forschung/Post-selection inference/Masterarbeit/selfmade package nachprogrammieren/GitHub_selective_inference")
-source("Hauptfunktion (analog zur mocasin Funktion).R")
-#source("parallel_selective-inference-Funktionen.R")
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /Simulation Study 3 - random effects structure misspecified")
+library(clubSandwich)  # not really neccessary
 
 ####################### one_simulation function ################################
 
