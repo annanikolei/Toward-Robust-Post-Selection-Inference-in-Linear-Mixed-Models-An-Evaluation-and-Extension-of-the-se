@@ -19,7 +19,7 @@ R_squared = 0.3
 n_obs = 40^2 ; m = 40
 
 # load fixed predictor matriced
-dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
+dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 
 ################################################################################
 ## Run the Simulation ##
