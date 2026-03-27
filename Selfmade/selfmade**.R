@@ -98,7 +98,7 @@ Z_B_work <- getME(mod, "Z")
 # This is required for:
 # - all estimators in the conditional perspective
 # - the ModelEstimate in the marginal perspective
-# Therefore, we compute it unconditionally (could alternatively use if/else).
+# Therefore, we compute it unconditionally.
 #
 # Relationship:
 # G_est = sigma^2 * Lambda %*% t(Lambda)
