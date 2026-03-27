@@ -73,37 +73,43 @@ mocasin <- function(mod, # fitted model (selected model fit)
                     sigma_square_epsilon_supplied = NULL,
                     R_supplied = NULL){
 
-  #-----------------------------------------------------------------------------
-#### Extrahieren von wichtigen Parametern aus geschätztem Modell mod
-  #-----------------------------------------------------------------------------
-  
- # Extrahiere y-Vektor, wenn nötig
- # if(is.null(this_y)){this_y <- mod@resp}
-  
-  # Extrahiere Anzahl an Beobachtungen
- 
-  n <- length(this_y)
-  number_of_cluster = ngrps(mod)[[1]]
-  
-  # Extrahiere die working Matrizen X_A und Z_B aus dem Modell                           #?# hier bei den ganzen Sachen vllt. noch if else Abfragen, ob überhaupt ModelEstimate bzw. irgendwas wofür das gebraucht wird?
-  X_A_work <- getME(mod, "X")
-  Z_B_work <- getME(mod, "Z") # in der marginal perspective sollen ja eh
-                              # keine random effects ausgewählt werden, daher  
-                              # i.A. übereinstimmend mit Z_supplied aber 
-                              # wir geben das trotzdem nicht als Z_supplied an, 
-                              # falls wir in einer späteren Simulation 
-                              # mal eine solche Verletzung ausprobieren wollen.
-  
-  # Extrahiere die estimated working Cholesky-Zerlegungsmatrix Lambda aus Modell. 
-  # Wird gebraucht für alle Schätzer in conditional perspective und für ModelEst
-  # in marginal perspective, daher berechnen wir das einfach immer                      #?# oder besser if else Abfrage
-  # Dabei gilt: G_est = sigma_square_epsilon * Lambda %*% t(Lambda).
-  # https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf (Formel 4)
-  Lambda_work_est <- getME(mod, "Lambda")
-  Lambdat_work_est <- getME(mod, "Lambdat") # = t(Lambda_work_est)
-  G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est                 #?# gut, ich könnte sigma_square_epsilon_estimated hier natürlich auch schon mal definieren (ich habe in dem R_R_inv sonst ja auch nochmal dri)
-  
+#-----------------------------------------------------------------------------
+#### Extract important parameters from the fitted model `mod`
+#-----------------------------------------------------------------------------
 
+# Extract y vector if needed
+# if (is.null(this_y)) { this_y <- mod@resp }
+
+# Extract number of observations
+n <- length(this_y)
+
+# Extract number of clusters (level-2 units)
+number_of_cluster <- ngrps(mod)[[1]]
+
+# Extract working design matrices X_A (fixed effects) and Z_B (random effects)
+# Note: In the marginal perspective, no random effects are selected,
+# so Z_B_work typically coincides with Z_supplied.
+# However, we do NOT pass it as Z_supplied, in case we want to
+# simulate violations of this assumption later.
+X_A_work <- getME(mod, "X")
+Z_B_work <- getME(mod, "Z")
+
+# Extract the estimated working Cholesky factor Lambda from the model.
+# This is required for:
+# - all estimators in the conditional perspective
+# - the ModelEstimate in the marginal perspective
+# Therefore, we compute it unconditionally (could alternatively use if/else).
+#
+# Relationship:
+# G_est = sigma^2 * Lambda %*% t(Lambda)
+# See: https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf (Formula 4)
+Lambda_work_est  <- getME(mod, "Lambda")
+Lambdat_work_est <- getME(mod, "Lambdat") # = t(Lambda_work_est)
+
+# Compute estimated random effects covariance matrix G
+G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
+
+  
   #-----------------------------------------------------------------------------
 #### Aufstellen der gegebenen oder Schätzung der (inversen) Kovarianzmatrizen
   #-----------------------------------------------------------------------------
