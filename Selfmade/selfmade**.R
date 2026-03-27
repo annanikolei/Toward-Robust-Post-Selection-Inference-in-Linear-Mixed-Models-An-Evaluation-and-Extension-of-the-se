@@ -186,53 +186,35 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
   else if(R_diag == F){
     
   ## marginal or conditional perspective
-    # Arbeit mit nicht-diagonalem R momentan nur möglich für supplied COV_estimator bei marginal und conditional Perspektive
-    if(!any( c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator,conditional_COV_estimator) ) ){
-      if(is.null(R_supplied) && any(c("marginal","conditional") %in% perspective)){ 
-      stop("R_diag = FALSE zeigt an, dass nicht-diagonale 
-       Level-1-Residualkovarianzmatrix genutzt werden soll. Momentan aber nur 
-       möglich wenn nicht-diagonale Level-1-Residualkovarianzmatrix supplied wird
-       bei marginal und conditional Perspektive.")
-      }
-      
-      else if(any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator,conditional_COV_estimator))){
-        stop("R_diag = FALSE zeigt an, dass nicht-diagonale 
-       Level-1-Residualkovarianzmatrix genutzt werden soll. Momentan aber nur 
-       für diagonale Level-1-Residualkovarianzmatrizen möglich oder wenn nicht-diagonale 
-       Level-1-Residualkovarianzmatrix supplied wird. Fehlermeldung kommt auch dann, wenn neben
-       supplied irgendein anderer estimator angegeben wird.")
-      }
-    
+
+# Currently, working with non-diagonal R is only supported when using
+# a supplied covariance estimator in both marginal and conditional perspectives
+if (!any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator, conditional_COV_estimator))) {
+  
+  # Case: No supported estimator is used and R is not supplied
+  if (is.null(R_supplied) && any(c("marginal","conditional") %in% perspective)) { 
+    stop("R_diag = FALSE indicates that a non-diagonal level-1 residual covariance matrix should be used. 
+Currently, this is only possible if a non-diagonal level-1 residual covariance matrix is supplied 
+for the marginal and/or conditional perspective.")
+  }
+  
+  # Case: Conflicting estimators are specified together with non-diagonal R
+  else if (any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator, conditional_COV_estimator))) {
+    stop("R_diag = FALSE indicates that a non-diagonal level-1 residual covariance matrix should be used. 
+Currently, this is only supported for diagonal level-1 residual covariance matrices, or if a non-diagonal 
+matrix is explicitly supplied. This error also occurs if 'supplied' is combined with any other estimator.")
+  }  
       
   ## marginal not efficient perspective 
     if("marginal_not_efficient" %in% perspective){
       
-      # bei dem notefficient Ansatz können wir ja quasi die ALM-Formeln verwenden
-      # und für Sigma (im Gegensatz zum ALM) nun auch andere Matrizen als sigmaepsilon^2*I_N
-      # zulassen, indem man die Residuen aus dem ALM dazu nutzt.
-      # Es gibt nun aus meiner Sicht mehrere Möglichkeiten, was die estimator machen können. 
-      # Entweder wird das komplette Sigma durch diese Residuenmultiplikationsmatrix ersetzt.
-      # Oder man ersetzt nur das R addiert den ZGZ' Teil.
-      #
-      # Beim ModelEstimate kann man dann entweder die Residuenmultiplikationsmatrix als SIGMA
-      # nutzen oder als R und dann mit dem working model Teil ZGZ' addieren
-      #
-      # Wenn man beim ICM das R ersetzen wollte, dann bräuchte man aber noch das G aus dem minimalen 
-      # Modell. Aber das minimale Modell ist ja kein LMM sondern ein ALM y~1, deshalb müsste man
-      # dann entweder sagen, dass hier nur SIGMA ersetztw erden kann oder dann G aus dem generellen 
-      # working model mod übernehmen.
-      #
-      # Aber deshalb müssen wir für den Fall, dass R_diag==F angeben, ob wir R oder SIGMA
-      # durch die Residuenmultiplikationsmatrix ersetzen wollen.
-      
-      
-      # Elemente ohne "supplied"
+      # Elemente without "supplied"
       marginal_not_efficient_COV_estimator_no_supplied <- marginal_not_efficient_COV_estimator[!grepl("supplied", marginal_not_efficient_COV_estimator)]
       
-      # Kombinationen nur für nicht-supplied
+      # combinations for not supplied
       combos <- as.vector(outer(marginal_not_efficient_COV_estimator_no_supplied, diagF_not_efficient_SIGMA_or_R, paste, sep = "_"))
       
-      # supplied einfach anhängen
+      # add supplied 
       marginal_not_efficient_COV_estimator  <- c(combos, marginal_not_efficient_COV_estimator[grepl("supplied", marginal_not_efficient_COV_estimator)])
       
       
@@ -240,8 +222,8 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
            is.null(Sigma_supplied) && 
            "supplied" %in% marginal_not_efficient_COV_estimator){
         
-        stop("in diagF_not_efficient_SIGMA_or_R ist angegeben, dass R,Z,G bzw. Sigma supplied wurde.
-             Aber R,Z,G_supplied bzw. Sigma_supplied ist NULL.")
+       stop("diagF_not_efficient_SIGMA_or_R indicates that R, Z, G, or Sigma is supplied, 
+             but the corresponding object (R_supplied, Z_supplied, G_supplied, or Sigma_supplied) is NULL.")
       }
          
     }
