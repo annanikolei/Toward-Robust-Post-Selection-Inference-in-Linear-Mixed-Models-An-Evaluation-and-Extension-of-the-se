@@ -193,7 +193,7 @@ for (i in start_iter:N) {
 }
 
 ########################
-# HC3 standard errors
+# HC3 correction
 ########################
 
 save_file <- paste0(
