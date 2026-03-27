@@ -42,7 +42,7 @@ mocasin <- function(mod, # fitted model (selected model fit)
                                                "supplied"), # estimator for covariance matrix (marginal)
                     marginal_not_efficient_COV_estimator = c("ModelEstimate", 
                                                              "ICM",
-                                                             "supplied"), # covariance estimator for inefficient marginal case
+                                                             "supplied"), # covariance estimator for not-efficient marginal case
                     
                     diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"), 
                     # if R_diag = FALSE, proposed covariance matrix extimator: should it replace full SIGMA or only R?
