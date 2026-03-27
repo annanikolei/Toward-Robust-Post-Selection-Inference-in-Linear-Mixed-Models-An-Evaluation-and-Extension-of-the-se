@@ -8,67 +8,70 @@ source("CovarianceMatrix-Function.R")
 source("parallel_selective-inference-Function.R") # or selective-inference-Function.R
 source("Testvector-Functions.R")
 
-mocasin <- function(mod, # fit des selektierten Modell
-                    balanced = TRUE, #gleich viele Level-1 Einheiten pro CLuster
-                    checkFun = NULL, # Funktion zur Überprüfung der Übereinstimmung 
-                                     #  mit initialem selection event
-                    checkConvergence_for_check_Fun = F, # wenn TRUE wird convergence bei 
-                    # checkFun geprüft und Tbs resamplet, wenn convergence nicht gegeben
-                    # dann muss aber auch die checkFun_checkConv angegeben sein
-                    checkFun_checkConv = NULL, # checkFun mit zusätzlicher Prüfung der convergence.
-                    # Muss zwei Argumente ausgeben, einmal wie es um Übereinstimmung mit initialem selection
-                    # event aussieht und einmal, ob convergence okay ist
-                    this_y, # Vektor an vorliegenden y-Werten
-                    B_MCsamples = 1000, # Anzahl an MC-samples
-                    MC_distribution = NULL, # MC-samples aus 
-                                            # proposal distribution "proposal"
-                                            # oder aus N(0,kappa_square)
-                                            # also aus "centered"
+mocasin <- function(mod, # fitted model (selected model fit)
+                    balanced = TRUE, # equal number of level-1 units per cluster?
+                    checkFun = NULL, # function to check agreement with the initial selection event
+                    checkConvergence_for_check_Fun = F, # if TRUE, convergence is checked within checkFun
+                    # if convergence fails, resampling is performed
+                    # in that case, checkFun_checkConv must also be provided
+                    checkFun_checkConv = NULL, # checkFun with additional convergence check
+                    # must return two outputs: (1) agreement with initial selection event
+                    # and (2) whether convergence is acceptable
+                    this_y, # vector of observed y values
+                    B_MCsamples = 1000, # number of Monte Carlo samples
+                    MC_distribution = NULL, # MC samples drawn either from
+                                            # proposal distribution ("proposal")
+                                            # or from N(0, kappa^2) ("centered")
                     bayesian = c("not_bayesian",
-                                 "bayesian"), # bayesianische KOV-Matrix
-                    which_marginal = NULL, # selinf für welche fixed effects
-                    which_conditional = NULL, # selinf für welche fixed + random
-                    rho_H0 = 0, # Nullhypothese für alle zu testenden Gewichte
-                    perspective = c("marginal","conditional"), # conditional,
-                                                               # marginal (efficient) oder "marginal_not_efficient" oder
-                                                               # alles zusammen
-                    robust_std.errors_marginal = F, # sollen bei marginaler Perspektive
-                                                    # robuste Standardfehler genutzt werden 
-                                                    # und wenn ja welche?
-                                                    # FALSE, "CR0", "CR2"
+                                 "bayesian"), # whether to use Bayesian covariance matrix
+                    which_marginal = NULL, # selection of fixed effects (marginal perspective)
+                    which_conditional = NULL, # selection of fixed + random effects (conditional perspective)
+                    rho_H0 = 0, # null hypothesis value for all tested coefficients
+                    perspective = c("marginal","conditional"), # inference perspective:
+                                                               # "conditional", "marginal" (efficient),
+                                                               # or "marginal_not_efficient", or all combined
+                    robust_std.errors_marginal = F, # whether to use robust standard errors
+                                                    # in marginal perspective
+                                                    # options: FALSE, "CR0", "CR2". Must be FALSE because it does not work
+
+                    
+                    R_diag = TRUE, # whether R = sigma^2 * I (homoskedastic + independent errors)
+                    
                     marginal_COV_estimator = c("ModelEstimate", 
                                                "ICM",
-                                               "supplied"), # welche Schätzer
-                                                            # für die KOV-Matrix
+                                               "supplied"), # estimator for covariance matrix (marginal)
                     marginal_not_efficient_COV_estimator = c("ModelEstimate", 
                                                              "ICM",
-                                                             "supplied"), # welche Schätzer
-                                                                          # für die KOV-Matrix
-                    diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"), # wenn Rdiag = F kann man mit ALM ResidualmutiplikationsKOVMatrix schätzen. Soll die SIGMA komplett ersetzen oder nur R?
+                                                             "supplied"), # covariance estimator for inefficient marginal case
+                    
+                    diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"), 
+                    # if R_diag = FALSE, proposed covariance matrix extimator: should it replace full SIGMA or only R?
                     
                     conditional_COV_estimator = c("ModelEstimate", 
                                                   "ICM",
                                                   "VarY",
-                                                  "supplied"), # welche Schätzer
-                                                            # für die KOV-Matrix
-                    HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
-                    cadjust = F, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
-                    symmetric_selection = T, # symmetrisches selection event?
-                    alpha = 0.05, # welches Signifikanzniveau
-                    allow_smaller_alpha = T, # Berechnung von größeren KIs?
-                    multiple = 7, # reguliert Sequenzbreite in pval_CI-Funktion
-                                  # bei Erstellung möglicher rho-Werte zur KI-
-                                  # Berechnung
-                    R_diag = TRUE, # R = sigma^2 * IN (Homo + Unabhängig) oder nicht?                   #?# muss auf jeden Fall noch eingearbeitet werden, wenn nicht diagonal genutzt werden soll
+                                                  "supplied"), # estimator for covariance matrix (conditional)
+                    
+                    HC_type = "HC0", # heteroskedasticity-consistent type (HC0, HC1, HC2, HC3)
+                    cadjust = F, # cluster adjustment (TRUE/FALSE)
+                    
+                    symmetric_selection = T, # symmetric selection event?
+                    
+                    alpha = 0.05, # significance level
+                    allow_smaller_alpha = T, # allow computation of larger confidence intervals?
+                    
+                    multiple = 7, # controls sequence width in p-value/CI function
+                                  # used to generate candidate rho values for CI computation
+                    
+                    
                     Sigma_supplied = NULL,
                     Z_supplied = NULL,
                     G_supplied = NULL,
                     Lambda_supplied = NULL,
                     Lambdat_supplied = NULL,
-                    G_work_supplied = NULL, # conditional perspective supplied
+                    G_work_supplied = NULL, # supplied G for conditional perspective
                     sigma_square_epsilon_supplied = NULL,
                     R_supplied = NULL){
-  
 
   #-----------------------------------------------------------------------------
 #### Extrahieren von wichtigen Parametern aus geschätztem Modell mod
