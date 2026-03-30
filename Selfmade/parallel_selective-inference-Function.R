@@ -172,6 +172,8 @@ pval_CI <- function(Tbs_survived, # all MC test statistics that lie in the infer
       maxiter = 100000)$root, silent = TRUE)
     
     # if this fails, compute alternative CI bound
+    # NOTE: The logic for alternative CI bounds is currently not correct
+    # and should be revisited. 
     if(allow_smaller_alpha == T & class(ci_low) =="try-error"){ 
       if(t_obs >= rho_H0){
         cil.smalleralpha <- 
