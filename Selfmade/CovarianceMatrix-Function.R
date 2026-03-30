@@ -154,9 +154,8 @@ R_R_invers_nondiagonal <- function(
 
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von Sigma für nicht-diagonales R für not efficient
+# Function to compute Sigma for non-diagonal R in the not efficient case
 #-------------------------------------------------------------------------------
-
 
 SIGMA_function_diagF <- function(
     mod,
@@ -173,28 +172,32 @@ SIGMA_function_diagF <- function(
     n,
     number_of_cluster){
   
-  # Liste für return vorbereiten
+  # Prepare list for return
   COV_estimator <- marginal_not_efficient_COV_estimator
   SIGMA_return_list <- setNames(vector("list", length(COV_estimator)),COV_estimator)
   
   ## SUPPLIED
   if("supplied" %in% marginal_not_efficient_COV_estimator){
     
-    if(!is.null(Sigma_supplied) && !is.null(R_supplied)){stop("Entweder Sigma_supplied oder
-                                                              R_supplied angeben.")}
+    if(!is.null(Sigma_supplied) && !is.null(R_supplied)){
+      stop("Either Sigma_supplied or R_supplied must be provided, not both.")
+    }
     
-    if(!is.null(Sigma_supplied)) {SIGMA_return_list$supplied <- Sigma_supplied}
+    if(!is.null(Sigma_supplied)) {
+      SIGMA_return_list$supplied <- Sigma_supplied
+    }
     
-    else {SIGMA_return_list$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied)+ R_supplied}
+    else {
+      SIGMA_return_list$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied)+ R_supplied
+    }
     
   }
-  
   
   ## MODELESTIMATE
   if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator |
      "ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator ){
     
-    # Fixed Effects Modell schätzen
+    # Estimate covariance matrix via clustered residuals
     KOVMatrix_ModelEstimate <- make_clustered_errors_KOVbdiag( balanced = balanced,
                                                                 mod = mod, 
                                                                 HC_type = HC_type, 
@@ -202,15 +205,17 @@ SIGMA_function_diagF <- function(
                                                                 clustersize = n/number_of_cluster,
                                                                 number_of_cluster = number_of_cluster )
     
-    if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ModelEstimate_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ModelEstimate
+    if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator) {
+      SIGMA_return_list$ModelEstimate_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ModelEstimate
+    }
     
-    if("ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ModelEstimate_SIGMA_replaced <- KOVMatrix_ModelEstimate
+    if("ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) {
+      SIGMA_return_list$ModelEstimate_SIGMA_replaced <- KOVMatrix_ModelEstimate
+    }
     
   }
   
-  
   ## ICM
-  
   if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator|
      "ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator){
     
@@ -221,15 +226,17 @@ SIGMA_function_diagF <- function(
                                                       clustersize = n/number_of_cluster,
                                                       number_of_cluster = number_of_cluster )
     
-    if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ICM_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ICM
+    if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator) {
+      SIGMA_return_list$ICM_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ICM
+    }
     
-    if("ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ICM_SIGMA_replaced <- KOVMatrix_ICM
+    if("ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) {
+      SIGMA_return_list$ICM_SIGMA_replaced <- KOVMatrix_ICM
+    }
     
   }
   
-  
   return(SIGMA_return_list)
-  
 }
 
 #-------------------------------------------------------------------------------
