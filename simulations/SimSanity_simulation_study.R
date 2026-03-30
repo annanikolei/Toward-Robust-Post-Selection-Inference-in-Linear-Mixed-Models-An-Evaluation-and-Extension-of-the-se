@@ -1,5 +1,5 @@
 ################################################################################
-# Sanity Check: Simulation Study 
+# Sanity Check: Simulation Study - SimStudy 2 - Discussion - Bayesian conditional
 ################################################################################
 library(dplyr)
 library(purrr)
