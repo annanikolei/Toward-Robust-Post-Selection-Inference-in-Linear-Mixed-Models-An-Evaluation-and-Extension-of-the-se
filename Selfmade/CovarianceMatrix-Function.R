@@ -240,8 +240,8 @@ SIGMA_function_diagF <- function(
 }
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von Sigma für die marginale not efficient Perspektive, wenn
-# R = sigma^2eps * In
+# Function to compute Sigma for the marginal not efficient perspective when
+# R = sigma^2_epsilon * I_n (diagonal residual covariance matrix)
 #-------------------------------------------------------------------------------
 
 SIGMA_function_diagT <- function( 
@@ -259,25 +259,25 @@ SIGMA_function_diagT <- function(
     R_ICM = NULL,
     n = NULL){ 
   
-  # Leere Liste fürSIGMA erstellen, sodass jedes Listenelement einen
-  #  Kovarianzmatrix-Schätzer enthalten kann
+  # Create empty list for SIGMA so that each element can store
+  # one covariance matrix estimator
   SIGMA <- setNames(vector("list", length(marginal_not_efficient_COV_estimator)),
                     marginal_not_efficient_COV_estimator)
   
   ## SUPPLIED
-  ## Falls marginal_not_efficient_COV_estimator == "supplied",d.h. falls Sigma angegeben ist
+  ## Case: marginal_not_efficient_COV_estimator == "supplied",
+  ## i.e., Sigma is provided
   if(c("supplied") %in% marginal_not_efficient_COV_estimator){
     
-    # Falls Sigma_supplied angegeben, schreibe es in SIGMA-Matrix
+    # If Sigma_supplied is provided, assign it directly
     if(!is.null(Sigma_supplied)){SIGMA$supplied <- Sigma_supplied}
     
-    # Falls Sigma_supplied nicht angegeben ist aber R,Z,Lambda,Lamdat_supplied
-    #  oder G_supplied,dann berechne Sigma_supplied und trage dies in
-    #  SIGMA ein
+    # If Sigma_supplied is not provided but R, Z, Lambda/Lambdat
+    # or G_supplied are provided, compute Sigma and store it
     else if (is.null(Sigma_supplied) && !is.null(Z_supplied)){
       
-      # Falls G_supplied nicht angegeben ist aber Lambda_supplied, berechne 
-      # damit die Schätzung von Sigma, ansonsten mit G_supplied
+      # If G_supplied is not provided but Lambda_supplied is,
+      # compute G from Lambda; otherwise use G_supplied
       if(!is.null(G_supplied)){G_supplied <- G_supplied}
       
       else if (is.null(G_supplied) && !is.null(Lambda_supplied)) {
@@ -285,43 +285,39 @@ SIGMA_function_diagT <- function(
         G_supplied <- Lambda_supplied %*% Lambdat_supplied}
       
       else if(is.null(G_supplied) && is.null(Lambda_supplied)){
-        stop("Da marginal_not_efficient_COV_estimator = 'supplied' muss für marginale not efficient 
-              Perspektive entweder Lambda_supplied oder G_supplied angegeben sein")}
+        stop("If marginal_not_efficient_COV_estimator = 'supplied', either 
+              Lambda_supplied or G_supplied must be provided for the marginal 
+              not efficient perspective")}
       
-      # Woodbury-Matrix-Identität zur effizienteren Berechnung der Inverse
+      # Compute Sigma = Z G Z' + R
       SIGMA$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied) + R_supplied
     }
     
-    # Else: Da "supplied angegeben wurde, muss auch Sigma_supplied nichtNULL 
-    # sein oder zumindest muss dann Z_supplied und G_supplied (bzw.Lambda) und 
-    # R_supplied angegeben sein 
-    else {stop("Da Da marginal_not_efficient_COV_estimator  = 'supplied' muss für 
-                marginale not efficient Perspektive entweder Sigma_supplied oder
-                (G_supplied bzw.Lambda_supplied) und Z_supplied angegeben sein")}
+    # Otherwise: required inputs for 'supplied' are missing
+    else {stop("If marginal_not_efficient_COV_estimator = 'supplied', either 
+                Sigma_supplied or (G_supplied / Lambda_supplied) and Z_supplied 
+                must be provided")}
   }
   
   ## MODELESTIMATE
-  ## Falls marginal_not_efficient_COV_estimator == "ModelEstimate", d.h. falls Sigma durch 
-  ## den plug-in Schätzer Sigma_dach also ModelEstimate geschätzt werden soll
+  ## Case: Sigma is estimated via plug-in estimator (model-based)
   if(c("ModelEstimate") %in% marginal_not_efficient_COV_estimator){
-    # Berechne den plug-in Schätzer für SIGMA 
     
+    # Compute plug-in estimator for Sigma
     SIGMA$ModelEstimate <- Z_B_work %*% G_work_est %*% t(Z_B_work) + R_est
     
   }
   
   ## ICM
-  ## Falls marginal_not_efficient_COV_estimator == "ICM", d.h. falls Sigma durch 
-  ## den konservativen minMod Schätzer also ICM geschätzt werden soll
+  ## Case: Sigma is estimated via conservative minMod (ICM estimator)
   if(c("ICM") %in% marginal_not_efficient_COV_estimator){
     
-    # Berechne den ICM Schätzer für SIGMA
+    # Compute ICM estimator for Sigma
     model <- fit_ICM
     SIGMA$ICM <- Sigma_ICM(model = model,
                            n = n,
                            R_ICM = R_ICM,
                            Z = Z_B_work)
-    
     
   }
   
