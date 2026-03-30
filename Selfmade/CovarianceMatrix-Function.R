@@ -547,7 +547,7 @@ K_inv.Ct.R_inv_list_function <- function(
   
   return_K_inv.Ct.R_inv_list$K_inv_list <- K_inv_list
   return_K_inv.Ct.R_inv_list$Ct.R_inv_list <- Ct.R_inv_list
-  return_K_inv.Ct.R_inv.C_list <- Ct.R_inv.C_list
+  return_K_inv.Ct.R_inv_list$Ct.R_inv.C_list <- Ct.R_inv.C_list
   return_K_inv.Ct.R_inv_list$C_block <- C_block
   
   return(return_K_inv.Ct.R_inv_list)
