@@ -441,10 +441,8 @@ SIGMA_invers_function <- function(
 
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von R_list,K_inv_list, Ct.R_inv_list, Ct.R_inv.C_list
-# für die konditionale Perspektive
+# Function to compute K^{-1}, C'R^{-1}, and C'R^{-1}C for the conditional perspective
 #-------------------------------------------------------------------------------
-
 
 K_inv.Ct.R_inv_list_function <- function(
     conditional_COV_estimator = c("ModelEstimate","ICM","VarY","supplied"),
@@ -458,130 +456,99 @@ K_inv.Ct.R_inv_list_function <- function(
     R_VarY_invers
 ){
   
-  
-  # Leere Liste für K_invers:=(t(C)%*%R_inv%*%C+Q)_inv erstellen, sodass jedes 
-  # Listenelement einen Schätzer für K_inv enthalten kann
+  # Initialize lists
   K_inv_list <- setNames(vector("list",length(conditional_COV_estimator)),
                          conditional_COV_estimator)
   
-  # Leere Liste für Ct.R_inv.C:=t(C)%*%R_inv%*%C  und Ct.R_inv:=t(C)%*%R_inv
-  # erstellen
   Ct.R_inv_list <- setNames(vector("list",length(conditional_COV_estimator)),
                             conditional_COV_estimator)
+  
   Ct.R_inv.C_list <- setNames(vector("list",length(conditional_COV_estimator)),
                               conditional_COV_estimator)
   
-  # Berechne Blockmatrix C zur Berechnung von K_inv
+  # Construct block matrix C = [X | Z]
   C_block <- cbind(X_A_work,Z_B_work)
   C <- C_block
   Ct <- t(C)
   
-  # Berechnung der Inverse von G_work_est, wenn dieses als Schätzer aus 
-  # mod übernommen wurde. Sowie Berechnung von Q_est
+  # Compute inverse of G_work_est and corresponding Q matrix
   if(any(c("ModelEstimate","ICM","VarY") %in% conditional_COV_estimator)){
     
-    # Berechnung der Inverse von G_work_est
     G_work_est_invers <- solve(G_work_est) 
     
-    # Berechnung von Q_est
     Q_est <- bdiag(matrix(0, ncol=ncol(X_A_work), nrow=ncol(X_A_work)),
                    G_work_est_invers)
   }
   
   ## SUPPLIED
-  # Falls conditional_COV_estimator == "supplied", nutze G_work_supplied
-  # [also
-  # die Kovarianzmatrix der random effects, die man erhalten würde, wenn man
-  # mit der Population das working model schätzen würde (also wenn das
-  # eigentlich ein Populationsmodell mit random slopes ist, aber man das nur
-  # mit random intercepts schätzt z.B)]
-  # und R_supplied_invers zur Berechnung von K_invers
   if(c("supplied") %in% conditional_COV_estimator){
     
     if(!is.null(G_work_supplied)){
-      # Berechnung der Block-Matrix Q: zunächst Berechnung von G_work_invers,
-      # danach die Bildung der Blockdiagonalmatrix
+      
       G_work_supplied_invers <- solve(G_work_supplied)
+      
       Q_supplied <- bdiag(matrix(0, ncol=ncol(X_A_work), nrow=ncol(X_A_work)),
                           G_work_supplied_invers)
       
-      # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
       Ct.R_inv_supplied <- Ct %*% R_supplied_invers
       Ct.R_inv_list$supplied <- Ct.R_inv_supplied
       
       Ct.R_inv.C_supplied <- Ct.R_inv_supplied %*% C
       Ct.R_inv.C_list$supplied <- Ct.R_inv.C_supplied
       
-      # Berechnung des enstprechenden Eintrags von K_inv                                    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
+      # Woodbury not applicable because Q is not invertible
       K_inv_list$supplied <- solve(Ct.R_inv.C_supplied + Q_supplied)
     }
     
-    
-    # Else: Da "supplied angegeben wurde, muss G_work_supplied
-    # angegeben sein.
-    else {stop("Da conditional_COV_estimator = 'supplied' muss
-                 G_work_supplied angegeben sein")}
-    
+    else {
+      stop("If conditional_COV_estimator = 'supplied', G_work_supplied must be provided.")
+    }
   }
   
   ## MODELESTIMATE
-  # Falls conditional_COV_estimator == "ModelEstimate", nutze Q_est
-  # und R_est_invers zur Berechnung von K_invers
   if(c("ModelEstimate") %in% conditional_COV_estimator){
     
-    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
     Ct.R_inv_ModelEstimate <- Ct %*% R_est_invers 
     Ct.R_inv_list$ModelEstimate <- Ct.R_inv_ModelEstimate
     
     Ct.R_inv.C_ModelEstimate <- Ct.R_inv_ModelEstimate %*% C
     Ct.R_inv.C_list$ModelEstimate <- Ct.R_inv.C_ModelEstimate
     
-    # Berechnung des enstprechenden Eintrags von K_inv
-    K_inv_list$ModelEstimate <- solve(Ct.R_inv.C_ModelEstimate + Q_est)}
+    K_inv_list$ModelEstimate <- solve(Ct.R_inv.C_ModelEstimate + Q_est)
+  }
   
   ## ICM
-  # Falls conditional_COV_estimator == "ICM", nutze Q_est
-  # und R_ICM_invers zur Berechnung von K_invers
-  # !!! das sollte aber nur verwendet werden, wenn keine random effects
-  # selektiert werden sollen
   if(c("ICM") %in% conditional_COV_estimator){
     
-    
-    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
     Ct.R_inv_ICM <- Ct %*% R_ICM_invers
     Ct.R_inv_list$ICM <- Ct.R_inv_ICM
     
     Ct.R_inv.C_ICM <- Ct.R_inv_ICM %*% C
     Ct.R_inv.C_list$ICM <- Ct.R_inv.C_ICM
     
-    # Berechnung des enstprechenden Eintrags von K_inv                                    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
-    K_inv_list$ICM <- solve(Ct.R_inv.C_ICM + Q_est)}
+    K_inv_list$ICM <- solve(Ct.R_inv.C_ICM + Q_est)
+  }
   
   ## VarY
-  # Falls conditional_COV_estimator == "ICM", nutze Q_est
-  # und R_ICM_invers zur Berechnung von K_invers
   if(c("VarY") %in% conditional_COV_estimator){
     
-    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
-    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
     Ct.R_inv_VarY <- Ct %*% R_VarY_invers
     Ct.R_inv_list$VarY <- Ct.R_inv_VarY
     
     Ct.R_inv.C_VarY <- Ct.R_inv_VarY %*% C
     Ct.R_inv.C_list$VarY <- Ct.R_inv.C_VarY
     
-    # Berechnung des enstprechenden Eintrags von K_inv
-    K_inv_list$VarY <- solve(Ct.R_inv.C_VarY + Q_est)}
+    K_inv_list$VarY <- solve(Ct.R_inv.C_VarY + Q_est)
+  }
   
-  ## Rückgabeobjekte
+  # Return object
   return_K_inv.Ct.R_inv_list <- setNames(vector("list",4),
                                          c("K_inv_list","Ct.R_inv_list","Ct.R_inv.C_list","C_block"))
   
   return_K_inv.Ct.R_inv_list$K_inv_list <- K_inv_list
   return_K_inv.Ct.R_inv_list$Ct.R_inv_list <- Ct.R_inv_list
-  return_K_inv.Ct.R_inv_list$Ct.R_inv.C_list <- Ct.R_inv.C_list
+  return_K_inv.Ct.R_inv.C_list <- Ct.R_inv.C_list
   return_K_inv.Ct.R_inv_list$C_block <- C_block
-  
   
   return(return_K_inv.Ct.R_inv_list)
 }
