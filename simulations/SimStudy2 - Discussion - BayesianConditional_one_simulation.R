@@ -3,10 +3,6 @@
 ################################################################################
 library(performance)
 library(clubSandwich)
-setwd("~/Documents/Forschung/Post-selection inference/Masterarbeit/selfmade package nachprogrammieren/GitHub_selective_inference")
-source("Hauptfunktion (analog zur mocasin Funktion).R")
-source("parallel_selective-inference-Funktionen.R")
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /SimSanityCheck_Problems_with_bayesian_conditional")
 
 SanCheck_one_simulation <- function(n_obs, # number of observations
                                      m, # number of level-2 units
