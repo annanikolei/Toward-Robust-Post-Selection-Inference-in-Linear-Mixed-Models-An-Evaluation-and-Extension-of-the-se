@@ -1,106 +1,99 @@
 ################################################################################
-# Schätzung der Kovarianzmatrizen-Funktionen
+# Covariance matrix estimation functions
 ################################################################################
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von R, R_invers für supplied, ModelEstimate und ICM
+# Function to compute R and R^{-1} for supplied, ModelEstimate, and ICM
 #-------------------------------------------------------------------------------
-## Bemerkung: für den VarY-estimator bei der conditional perspective
+## Note: also used for the VarY estimator in the conditional perspective
 
-
-R_R_invers <- function(mod, # fit des selektierten Modell
-                       this_y = NULL, # Vektor an vorliegenden y-Werten
-                       n, # Länge von this_y
+R_R_invers <- function(mod, # fitted model
+                       this_y = NULL, # vector of observed y values
+                       n, # length of this_y
                        marginal_COV_estimator = c("ModelEstimate", 
                                                   "ICM",
-                                                  "supplied"), # KOV-estimator
+                                                  "supplied"), # covariance estimator
                        conditional_COV_estimator = c("ModelEstimate", 
                                                      "ICM",
                                                      "VarY",
-                                                     "supplied"),# KOV-estimator
+                                                     "supplied"), # covariance estimator
                        fit_ICM = NULL,
                        Sigma_supplied = NULL,
                        sigma_square_epsilon_supplied = NULL){
   
-  # Liste für return vorbereiten
+  # Prepare list for return
   COV_estimator <- unique(c(marginal_COV_estimator, conditional_COV_estimator))
   R_return_list <- R_inv_return_list <- setNames(vector("list",
                                                         length(COV_estimator)),
                                                  COV_estimator)
   
-  
-  
   ## SUPPLIED
-  # Falls supplied bei marginal und kein Sigma_supplied angegeben ist oder
-  # falls supplied bei conditional, berechne aus dem supplied sigma-square_error
-  # das R_inv_supplied
+  # If "supplied" is used for marginal and Sigma_supplied is missing OR
+  # if "supplied" is used for conditional, compute R from supplied sigma^2
   if((c("supplied") %in% marginal_COV_estimator && is.null(Sigma_supplied))|
      c("supplied") %in% conditional_COV_estimator){
     
     if(!is.null(sigma_square_epsilon_supplied)){
       
       R_supplied <- Matrix(diag(sigma_square_epsilon_supplied,n),sparse=T)
-      # in Listen übergeben 
+      # store in list
       R_return_list$supplied <- R_supplied
       
       R_supplied_invers <- Matrix(diag(1/sigma_square_epsilon_supplied,n),
-                                  sparse=T) # Inverse Diagonalmatrix                             #?# Muss ich beim R_supplied_invers auch mit Rmpfr arbeiten?
-      # in Listen übergeben 
+                                  sparse=T) # inverse diagonal matrix
+      # store in list
       R_inv_return_list$supplied <- R_supplied_invers
     } 
     else if(is.null(sigma_square_epsilon_supplied)){
-      stop("Da COV_estimator = 'supplied' muss entweder Sigma_supplied(marginal) 
-            oder sigma_square_epsilon_supplied (marginal, conditional) 
-            angegeben sein")
+      stop("If COV_estimator = 'supplied', either Sigma_supplied (marginal) 
+            or sigma_square_epsilon_supplied (marginal, conditional) 
+            must be provided")
     }
   }
   
   ## MODELESTIMATE
   if(c("ModelEstimate") %in% COV_estimator){
-    # Extrahiere estimated sigma_square_epsilon (Level-1-Residualvarianz)
+    # Extract estimated sigma^2_epsilon (level-1 residual variance)
     sigma_square_epsilon <- sigma(mod)^2
     
     R_est <- Matrix(diag(sigma_square_epsilon,n), sparse = T )
-    # in Listen übergeben 
+    # store in list
     R_return_list$ModelEstimate <- R_est
     
-    
     R_est_invers <- Matrix(diag((1/sigma_square_epsilon),n),
-                           sparse = T) # Inverse Diagonalmatrix                            #?# Rmpfr?
-    # in Listen übergeben 
+                           sparse = T) # inverse diagonal matrix
+    # store in list
     R_inv_return_list$ModelEstimate <- R_est_invers
   }
   
   ## ICM
-  # Schätzung des minimalen Intercept Modells zur späteren Berechnung des
-  # ICM-Schätzers. Wir machen das aber bereits hier, damit es nicht bei marginal
-  # und conditional perspective, also ggf. zweimal geladen werden muss
+  # Estimate minimal intercept model for later ICM estimator computation
   if(c("ICM") %in%  COV_estimator){
     sigma_square_epsilon_ICM <- getME(fit_ICM, "sigma")^2
     
     R_ICM <- Matrix(diag(sigma_square_epsilon_ICM,n), sparse = T)
-    # in Listen übergeben 
+    # store in list
     R_return_list$ICM<- R_ICM
     
     R_ICM_invers <- Matrix(diag((1/sigma_square_epsilon_ICM),n),
-                           sparse = T) # Inverse Diagonalmat                          #?# Rmpfr?
-    # in Listen übergeben 
+                           sparse = T) # inverse diagonal matrix
+    # store in list
     R_inv_return_list$ICM <- R_ICM_invers
   }
   
   ## VarY
-  ## geht nur bei diagonaler KOV-Matrix
+  ## only works for diagonal covariance matrix
   if(c("VarY") %in%  conditional_COV_estimator){
-    # plugin für sigma_square_epsilon by Tibshirani et al. 2018
+    # plug-in estimator for sigma^2_epsilon (Tibshirani et al. 2018)
     sigma_square_epsilon_VarY <- as.numeric(var(this_y)*(n-1)/n)
     
     R_VarY <- Matrix(diag(sigma_square_epsilon_VarY,n), sparse = T)
-    # in Listen übergeben 
+    # store in list
     R_return_list$VarY<- R_VarY
     
     R_VarY_invers <- Matrix(diag((1/sigma_square_epsilon_VarY),n),
-                            sparse = T) # Inverse Diagnlmtrx
-    # in Listen übergeben 
+                            sparse = T) # inverse diagonal matrix
+    # store in list
     R_inv_return_list$VarY <- R_VarY_invers
   }
   
@@ -108,7 +101,6 @@ R_R_invers <- function(mod, # fit des selektierten Modell
   R_R_inv_return_list$R <- R_return_list
   R_R_inv_return_list$R_inv <- R_inv_return_list
   return(R_R_inv_return_list)
-  
 }
 
 
