@@ -1,9 +1,8 @@
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /SimSanityCheck_Problems_with_bayesian_conditional")
-source("SimSanity_helper.R")
-source("SimSanity_dgp.R")
-source("SimSanity_SelectionProcess.R")
-source("SimSanity_one_simulation.R")
-source("SimSanity_simulation_study.R")
+source("SimStudy2 - Discussion - BayesianConditional_helper.R")
+source("SimStudy2 - Discussion - BayesianConditional_dgp.R")
+source("SimStudy2 - Discussion - BayesianConditional_SelectionProcess.R")
+source("SimStudy2 - Discussion - BayesianConditional_one_simulation.R")
+source("SimStudy2 - Discussion - BayesianConditional_simulation_study.R")
 
 SimulationStudy_SanityCheck <-
   SimSanity_simulation_study(  n_iter = 1000, #number of replications per condition
