@@ -1,54 +1,52 @@
 ################################################################################
-# selective-inference Funktionen
+# selective-inference functions
 ################################################################################
 
 library(performance)
 
-# Beschreibung: In diesem Skript werden die MC-samples gezogen und daraus Ceta
-#               berechnet und somit die selective-inference-p-Werte und die
-#               selective-inference-KIs bestimmt. 
+# Description: In this script, MC samples are drawn and used to compute Ceta,
+#              which is then used to determine selective-inference p-values and
+#              selective-inference confidence intervals.
 #
-# Die erste Funktion (Name: pval_CI ;analog zu selinf im selfmade-package)
-# berechnet mithilfe der angegebenen MC-samples p-Werte und Konfidenzintervalle
-# basierend auf der approximativen Ceta-Formel (7) [MA Seite 18].
+# The first function (name: pval_CI; analogous to selinf in the selfmade package)
+# computes p-values and confidence intervals based on the given MC samples using
+# the approximate Ceta formula (7) [thesis p. 18].
 #
-#
-# Die zweite Funktion (Name: selective_inference ;analog zu pval_vT_cov Funktion  
-# im selfmade-package) beinhaltet Ceta-Funktion und zieht vorher die MC-samples
-# aus der proposal distribution 
+# The second function (name: selective_inference; analogous to pval_vT_cov
+# function in the selfmade package) includes the Ceta function and first draws
+# MC samples from the proposal distribution.
 
 #-------------------------------------------------------------------------------
 # pval_CI
 #-------------------------------------------------------------------------------
 
-pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference 
-                    # region liegen
-                    t_obs, # beobachteter Testwert
-                    wbs, # Gewichte für Approximation von Ceta: Formel (7) in MA
-                    kappa_square, # Varianz der Teststatistik
-                    rho_H0 = 0, # Nullhypothesenwert des zu testenden Gewichts
-                    symmetric_selection = T, # vmtl. symmetrische selection?
-                    alpha = 0.05, # welches Signifikanzniveau
-                    allow_smaller_alpha = T, # Berechnung von größeren KIs?
-                    multiple = 7, # reguliert Sequenzbreite bei rho_sequence
+pval_CI <- function(Tbs_survived, # all MC test statistics that lie in the inference region
+                    t_obs, # observed test statistic
+                    wbs, # weights for approximating Ceta: formula (7) in thesis
+                    kappa_square, # variance of the test statistic
+                    rho_H0 = 0, # null hypothesis value of the parameter
+                    symmetric_selection = T, # whether selection is symmetric
+                    alpha = 0.05, # significance level
+                    allow_smaller_alpha = T, # allow computation of wider CIs if needed
+                    multiple = 7, # controls range of rho_sequence
                     total_resamplings_due_to_convergence
 ){
   
   
-  # wie viele MC-samples liegen in inference region
+  # number of MC samples that lie in the inference region
   number_survived_MC <- length(Tbs_survived)
   
-  ## Wenn Bestimmung von p-Werten und KI-Grenzen nicht möglich ist
-  # falls keine der MC-Teststatistiken Tbs in der inference region liegt, kann
-  # weder ein p-Wert noch ein KI berechnet werden
+  ## If computation of p-values and CI bounds is not possible
+  # If none of the MC test statistics lie in the inference region,
+  # neither p-values nor confidence intervals can be computed
   
-  # check ob mind. 1 MC-sample in inference region liegt, gebe ansonsten NA aus
+  # check whether at least 1 MC sample lies in the inference region
   if(number_survived_MC == 0) {
-    warning("Alle MC-samples liegen außerhalb der inference region, daher 
-    konnten keine p-Werte und keine KI-Grenzen bestimmt werden. Reduziere 
-    rejection rate bei MC-sampling durch diese zwei Optionen:
-    (1) Erhöhe B_MC_samples
-    (2) Nutze andere MC_distribution als 'centered'")
+    warning("All MC samples lie outside the inference region, therefore 
+    no p-values or confidence intervals could be computed. Reduce 
+    rejection rate in MC sampling using the following options:
+    (1) Increase B_MC_samples
+    (2) Use a different MC_distribution than 'centered'")
     return(data.frame(number_survived_MC = 0,
                       pval_right = NA,
                       pval_two = NA,
@@ -59,53 +57,47 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
                       total_resamplings_due_to_convergence))
   }
   
-  # welche Tbs, die in der inference region liegen, sind größer (gleich) t_obs
+  # which Tbs in the inference region are greater (or equal) to t_obs
   which.Tbs_surv_geq_tobs <- Tbs_survived >= rep(t_obs, length(Tbs_survived))
   Tbs_surv_geq_tobs <- Tbs_survived[which.Tbs_surv_geq_tobs]
   
   if(symmetric_selection == FALSE){
-    # welche Absolutwerte der Tbs, die in der inference region liegen, sind größer 
-    # (gleich) der Absolutbetrag von t_obs
+    # which absolute values of Tbs in the inference region are greater (or equal)
+    # to the absolute value of t_obs
     which_abs.Tbs_surv_geq_tobs <- abs(Tbs_survived) >= rep(abs(t_obs), 
                                                             length(Tbs_survived))
     abs.Tbs_surv_geq_tobs <- Tbs_survived[which_abs.Tbs_surv_geq_tobs]}
   
   
-  # Berechnung der p-Werte--------------------------------------------------------
+  # Computation of p-values--------------------------------------------------------
   
-  # p-Wert:
-  # eigentlich Berechnung über die Ceta-Formel [Formel (7) in MA] aber wenn man
-  # Testung gegen rho_H0=0 vornimmt, dann kann man die Formel vereinfachen, denn
-  # exp(0)=1
+  # p-value:
+  # Usually computed using the Ceta formula [formula (7) in thesis], but if
+  # testing against rho_H0 = 0, the formula simplifies since exp(0) = 1
   
   if(rho_H0 == 0){
     
-    # Nenner von Ceta-Formel
+    # denominator of the Ceta formula
     sum_wbs <- sum(wbs)
     
-    # rechtsseitiger p-Wert
+    # right-sided p-value
     pval_right <- as.numeric(sum(wbs[which.Tbs_surv_geq_tobs]) / sum_wbs)
     
-    # zweiseitiger p-wert
-    # wir definieren diesen anders als im selfmade-package und zwar als
-    # P(|T|>=|t_obs| | H0) weil die Ursprungsverteilung der Teststatistik ja mal
-    # eine symmetrische Verteilung war (und bei den meisten selection events 
-    # auch immer noch ist). Wenn nicht ausschöpfend gesampled wird, ist das 
-    # dann zwar immer noch das gleiche Problem, wie bei min(pr,pl) aber bei 
-    # ausschöpfendem sampling zumindest nicht
+    # two-sided p-value
+    # defined here as P(|T| >= |t_obs| | H0), since the original distribution
+    # of the test statistic is symmetric (and often remains so after selection)
     if(symmetric_selection == TRUE){
       pval_two <- 2* min(pval_right, 1 - pval_right)
     }
     else if(symmetric_selection == FALSE){
-      pval_two <- as.numeric(sum(wbs[which_abs.Tbs_surv_geq_tobs]) / sum_wbs)               #!# Problem, wenn nicht ausschöpfend aus distribution gesampled wird
+      pval_two <- as.numeric(sum(wbs[which_abs.Tbs_surv_geq_tobs]) / sum_wbs)
     }
     
   }
   
-  else if(rho_H0 != 0){ # wenn rho_H0!=0 können wir nicht mehr die vereinfachte
-    # Ceta-Formel verwenden, sondern die normale 
+  else if(rho_H0 != 0){ # for rho_H0 != 0, the simplified Ceta formula cannot be used
     
-    # rechtsseitiger p-Wert
+    # right-sided p-value
     pval_right <- as.numeric(
       Ceta(wbs = wbs,
            wbs_geq_tobs = wbs[which.Tbs_surv_geq_tobs],
@@ -114,7 +106,7 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
            Tbs_survived = Tbs_survived,
            Tbs_surv_geq_tobs = Tbs_surv_geq_tobs))
     
-    # zweiseitiger p-Wert
+    # two-sided p-value
     if(symmetric_selection == TRUE){
       pval_two <- min(pval_right, 1 - pval_right)
     }
@@ -132,14 +124,11 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
   
   
   
-  # Berechnung der KI-Grenzen-----------------------------------------------------
+  # Computation of confidence interval bounds-------------------------------------
   
-  ## Wenn Bestimmung der (1-alpha)% KI-Grenzen nicht möglich ist
-  # Ist dann nicht möglich, wenn alle MC-Tbs, die überlebt haben, größer oder 
-  # kleiner als t_obs sind, denn es muss ja ein rho gefunden werden, sodass
-  # Ceta bzw. 1-Ceta gleich 1-alpha/2 bzw. alpha/2 wird. Aber wenn alle 
-  # MC-sample Tbs größer als t_obs sind, dann ist Ceta = 1 und wenn alle kleiner
-  # als t_obs sind, dann ist Ceta = 0.
+  ## If computation of (1-alpha)% CI bounds is not possible
+  # This happens if all surviving MC Tbs are either greater or smaller than t_obs,
+  # since a rho must be found such that Ceta or 1-Ceta equals alpha/2 or 1-alpha/2.
   if(symmetric_selection == TRUE){
     if(all(Tbs_survived > rep(t_obs,number_survived_MC)) |
        all(Tbs_survived < rep(t_obs,number_survived_MC)) ){
@@ -154,16 +143,14 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
       
     }
     
-    ## Wenn Berechnung der KI-Grenzen möglich ist, muss die Ceta-Formel nach rho
-    # umgestellt werden
+    ## If CI computation is possible, the Ceta formula must be inverted w.r.t. rho
     
-    # Erzeugung von Sequenz von möglichen rho-Werten
+    # generate a sequence of possible rho values
     rho_sequence <- seq(min(Tbs_survived ) - multiple*sqrt(kappa_square),
                         max(Tbs_survived ) + multiple*sqrt(kappa_square),
                         l = multiple * 1000)
     
-    # Funktion zur Berechnung der Ceta-Werte der rho_sequence-Werte
-    # unter den spezifischen vorliegenden MC-samples
+    # function to compute Ceta values for given rho
     Ceta_function <- function(rho){Ceta(wbs = wbs,
                                         wbs_geq_tobs = wbs[which.Tbs_surv_geq_tobs],
                                         rho = rho,
@@ -171,27 +158,21 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
                                         Tbs_survived,
                                         Tbs_surv_geq_tobs)}
     
-    # Berechnung der unteren und oberen KI-Grenzen: suche Werte rho_low und rho_up       #?# wenn man die nicht-symmetrischen selection events hat, muss man auch hier mal gucken, ob das so Sinn ergibt
-    # sodass Ceta(rho_low) = alpha/2 <=> Ceta(rho_low) - alpha/2 = 0
-    # und Ceta(rho_up) = 1 - alpha/2 <=> Ceta(rho_up) - (1 - alpha/2) = 0
+    # compute lower and upper CI bounds: find rho such that
+    # Ceta(rho_low) = alpha/2 and Ceta(rho_up) = 1 - alpha/2
     
-    ## untere Grenze 
-    # setze Werte der alpha%-KI-Grenze auf NA, damit es auf jeden Fall Werte
-    # gibt, die zurückgegeben werden
+    ## lower bound 
     ci_low <- NA
     cil.smalleralpha <- NA
     
-    # Berechne den alpha%-KI-Wert der Grenze
     ci_low <- try(uniroot(f = function(rho){
       as.numeric(Ceta_function(rho)) - alpha/2}, 
       interval = range(rho_sequence),
       extendInt = "upX",
       maxiter = 100000)$root, silent = TRUE)
     
-    # falls das nicht geklappt hat mit dem alpha%-KI, berechne anderes KI                 #?# ich habe das jetzt so übernommen, wie in dem selfmade-package aber ich verstehe nicht, warum die es so berechnen (ist das überhaupt kleineres alpha - nope)
+    # if this fails, compute alternative CI bound
     if(allow_smaller_alpha == T & class(ci_low) =="try-error"){ 
-      #!# ja das ist auf jeden Fall falsch, man könnte es halt wenn noch besser zu min als max machen aber es ist eh falsch... ich lasse es jetzt erstmal so weil ich glaube, dass das Problem so gar nicht so häufig auftritt
-      # Berechne die alternative KI-Grenze
       if(t_obs >= rho_H0){
         cil.smalleralpha <- 
           max(rho_sequence[rho_sequence > rho_H0 & rho_sequence < t_obs]) 
@@ -201,32 +182,26 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
           max(rho_sequence[rho_sequence < rho_H0 & rho_sequence < t_obs]) 
       }
       
-      # Gebe Warnmeldung aus und berichte, welche Qunatil-Grenze gewählt wurde
       warning("Lower interval limit is not the ",
               alpha/2*100, "%-quantile, but the (",
               signif(as.numeric(Ceta_function(cil.smalleralpha)*100),3), 
               ")%-quantile.") 
     }
     
-    ## obere Grenze
-    # setze Werte der alpha%-KI-Grenze auf NA, damit es auf jeden Fall Werte
-    # gibt, die zurückgegeben werden
+    ## upper bound
     ci_up <- NA
     ciu.smalleralpha <- NA
     
-    # Berechne den alpha%-KI-Wert der Grenze
     ci_up <- try(uniroot(f = function(rho){
       as.numeric(Ceta_function(rho)) - (1-alpha/2)}, 
       interval = range(rho_sequence),
       extendInt = "upX",
       maxiter = 100000)$root, silent = TRUE)
     
-    # falls das nicht geklappt hat mit dem alpha%-KI, berechne anderes KI                 #?# ich habe das jetzt so übernommen, wie in dem selfmade-package aber ich verstehe nicht, warum die es so berechnen
+    # if this fails, compute alternative CI bound
     if(allow_smaller_alpha == T & class(ci_low) =="try-error"){ 
-      # setze Wert der alpha%-KI-Grenze auf NA
       ci_up <- NA
       
-      # Berechne die alternative KI-Grenze
       if(t_obs >= rho_H0){
         ciu.smalleralpha <- 
           min(rho_sequence[rho_sequence > rho_H0 & rho_sequence > t_obs]) 
@@ -236,14 +211,13 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
           min(rho_sequence[rho_sequence < rho_H0 & rho_sequence > t_obs]) 
       }
       
-      # Gebe Warnmeldung aus und berichte, welche Qunatil-Grenze gewählt wurde
       warning("Upper interval limit is not the ",
               (1-alpha/2)*100, "%-quantile, but the (",
               signif(100-(as.numeric(Ceta_function(ciu.smalleralpha))*100),3), 
               ")%-quantile.") 
     }
     
-    return(data.frame(number_survived_MC = number_survived_MC,                             #?# oder soll ich dazu auch noch ausgeben, welches %-KI das jetzt ist?
+    return(data.frame(number_survived_MC = number_survived_MC,
                       pval_right = pval_right,
                       pval_two = pval_two,
                       cil = ci_low, 
@@ -256,7 +230,6 @@ pval_CI <- function(Tbs_survived, # alle MC-Teststatistiken, die in inference
   
   
 }
-
 
 #-------------------------------------------------------------------------------
 # selective_inference
