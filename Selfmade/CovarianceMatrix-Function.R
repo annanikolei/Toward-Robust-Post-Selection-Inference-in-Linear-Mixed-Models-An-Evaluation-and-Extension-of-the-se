@@ -105,42 +105,39 @@ R_R_invers <- function(mod, # fitted model
 
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von R, R_invers für nicht-diagonales R
+# Function to compute R and R^{-1} for non-diagonal R
 #-------------------------------------------------------------------------------
-
 
 R_R_invers_nondiagonal <- function(
     marginal_COV_estimator = c("ModelEstimate", 
                                "ICM",
-                               "supplied"), # KOV-estimator
+                               "supplied"), # covariance estimator
     conditional_COV_estimator = c("ModelEstimate", 
                                   "ICM",
                                   "VarY",
-                                  "supplied"),# KOV-estimator
+                                  "supplied"),# covariance estimator
     R_supplied){
   
-  # Liste für return vorbereiten
+  # Prepare list for return
   COV_estimator <- unique(c(marginal_COV_estimator, conditional_COV_estimator))
   R_return_list <- R_inv_return_list <- setNames(vector("list",
                                                         length(COV_estimator)),
                                                  COV_estimator)
   
-  
-  
   ## SUPPLIED
-  # Falls supplied bei marginal oder
-  # falls supplied bei conditional, berechne aus dem supplied R und Rinvers
+  # If "supplied" is used (marginal or conditional),
+  # compute R and R^{-1} from the supplied matrix
   if(c("supplied") %in% marginal_COV_estimator |
      c("supplied") %in% conditional_COV_estimator){
     
     R_supplied <- as.matrix(R_supplied)
     
-    # in Listen übergeben 
+    # store in list
     R_return_list$supplied <- R_supplied
     
     R_supplied_invers <- solve(R_supplied)
     
-    # in Listen übergeben 
+    # store in list
     R_inv_return_list$supplied <- R_supplied_invers
     
   }
@@ -153,7 +150,6 @@ R_R_invers_nondiagonal <- function(
   R_R_inv_return_list$R <- R_return_list
   R_R_inv_return_list$R_inv <- R_inv_return_list
   return(R_R_inv_return_list)
-  
 }
 
 
