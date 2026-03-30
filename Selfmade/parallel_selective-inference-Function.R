@@ -295,18 +295,18 @@ selective_inference <- function(n,
                                 definition_dsampFun = NULL # function(tsta,log) # density
 ){
   
-  # Berechnung der beobachteten Teststatistik t_obs
+  # Compute the observed test statistic t_obs
   t_obs <- as.numeric(vt %*% this_y) 
   
-  # Berechnung der orthogonalen Projektion := (I-dirV) * vt *y
+  # Compute the orthogonal projection := (I - dirV) * vt * y
   orth_proj <- (diag(n) - dirV %*% vt) %*% this_y
   
-  # MC-samples aus zentrierter Normalverteilung N(0,kappa_square) bzw. aus 
-  # proposal distribution N(t_obs,kappa_square) oder proposal distribution, die
-  # sich aus mehreren NVs zusammensetzt, ziehen und dann Übereinstimmung mit dem
-  # initialen selection event überprüfen#-----------------------------------------
+  # Draw MC samples from a centered normal distribution N(0, kappa_square) or from
+  # a proposal distribution N(t_obs, kappa_square) or another user-defined proposal,
+  # then check agreement with the initial selection event
+  #-----------------------------------------
   
-  # MC_distribution festlegen:                                                             #?# Einbauen von check, ob proposal distribution gut funktioniert
+  # Define MC_distribution:                                                             #?# consider adding a check whether the proposal distribution performs well
   if(MC_distribution == "proposal"){
     sampFun = function(num) rnorm(num,
                                   mean = t_obs,
@@ -329,34 +329,31 @@ selective_inference <- function(n,
   }
   
   
-  # Hier könnte eine andere Möglichkeit für sampFun stehen                                 #?# eventuell hier das noch mit der mixture distribution?
+  # Another option for sampFun could be implemented here                                 #?# possibly extend this to a mixture distribution
   
   if(checkConvergence_for_check_Fun == F){
     
     if(is.null(checkFun)){  
-      stop("checkFun muss angegeben sein, wenn convergence bei MCsampling nicht
-         überprüft werden soll!") }
+      stop("checkFun must be provided if convergence is not checked during MC sampling!") }
     
-    # MC-samples ziehen
+    # Draw MC samples
     Tbs <- sampFun(num = B_MCsamples) 
     
-    # Transformation der Tbs zu den y_bs. Pro b: y_b = T_b * dirV + P_ortho
+    # Transform Tbs to y_bs. For each b: y_b = T_b * dirV + P_ortho
     ybs <- lapply(Tbs, function(Tb) as.numeric(Tb * dirV + orth_proj)) 
     
-    # Übereinstimmung mit initialem selection event überprüfen
-    # # unparallelisierte Version
-    # indicator_inference_region<- c() # leerer Vektor, in den eingetragen wird, 
-    #                                  # ob Übereinstimmung
-    #                                  # mit selection event S(thisy) oder 
-    #                                  # nicht und somit, ob T_b
-    #                                  # in Inferenzregion liegt
+    # Check agreement with the initial selection event
+    # # non-parallel version
+    # indicator_inference_region<- c() # empty vector to store whether
+    #                                  # the sample matches the selection event S(this_y)
+    #                                  # and thus whether T_b lies in the inference region
     # 
     # for(iyb in 1:length(ybs)){
-    # indicator_inference_region[iyb] <- checkFun(ybs[[iyb]])}                                #?# hier parallelisieren?  #?# das liegt vermutlich an der Komplexität von simulation study 2 bzw. an checkFun aber man kriegt da immer singular fit
+    # indicator_inference_region[iyb] <- checkFun(ybs[[iyb]])}                                #?# parallelize here? likely bottleneck due to complexity of simulation study 2 or checkFun (singular fit issues)
     
     
-    # Übereinstimmung mit initialem selection event überprüfen
-    # parallelisierte Version
+    # Check agreement with the initial selection event
+    # parallelized version
     # indicator_inference_region <- future_sapply(ybs, function(yb) {
     #   checkFun(yb)
     # }, future.seed = TRUE)
@@ -365,8 +362,8 @@ selective_inference <- function(n,
       checkFun(yb)
     }, mc.set.seed = TRUE, mc.cores = 10))
     
-    # Extrahiere alle MC-samples der MC-Teststatistiken Tbs, die in der inference 
-    # region liegen, die selection also überlebt haben
+    # Extract MC samples of test statistics Tbs that lie in the inference region
+    # (i.e., that survive the selection event)
     Tbs_survived <- Tbs[indicator_inference_region]
     
     total_resamplings_due_to_convergence <- 0 # since no resampling is done
@@ -375,8 +372,7 @@ selective_inference <- function(n,
   if (checkConvergence_for_check_Fun == TRUE) {
     
     if (is.null(checkFun_checkConv)) {  
-      stop("checkFun_checkConv muss angegeben sein, wenn convergence bei 
-         MCsampling überprüft werden soll!") }
+      stop("checkFun_checkConv must be provided if convergence during MC sampling is checked!") }
     
     # result_list <- future_lapply(seq_len(B_MCsamples), function(b) {
     #   convergence_okay <- FALSE
@@ -419,35 +415,34 @@ selective_inference <- function(n,
       )
     }, mc.set.seed = TRUE, mc.cores = 10)
     
-    # Extrahiere die Tb-Werte und Anzahl der Versuche
+    # Extract Tb values and number of attempts
     Tbs_survived <- sapply(result_list, function(res) res$Tb)
     attempts_per_sample <- sapply(result_list, function(res) res$attempts)
     
-    # Entferne NA-Einträge
+    # Remove NA entries
     Tbs_survived <- Tbs_survived[!is.na(Tbs_survived)]
     
-    # Anzahl der *zusätzlichen* Samplings wegen convergence issues
+    # Number of *additional* samplings due to convergence issues
     total_resamplings_due_to_convergence <- sum(attempts_per_sample) - B_MCsamples
     
   }
   
   
-  # Berechnung der Gewichte für die importance selection--------------------------
+  # Compute importance sampling weights--------------------------
   
-  # Muss natürlich nur gemacht werden, wenn man nicht die die zentrierte 
-  # N(0,kappa_square) als MC_distribution genommen hat, denn fürs zentrierte
-  # etzen wir die Gewichte einfach auf 1
+  # Only needed if the centered N(0, kappa_square) is not used.
+  # For the centered case, weights are simply set to 1
   if(output == "pvalCI"){ 
     
   if(MC_distribution == "centered"){ 
-    wbs <- Rmpfr::mpfr(rep(1, length(Tbs_survived)),2)                                   #?# ich habe das hier auch einfach mal mit dem mpfr gemacht, damit das von der Struktur her immer noch gleich ist
+    wbs <- Rmpfr::mpfr(rep(1, length(Tbs_survived)),2)                                   #?# using mpfr here as well to keep structure consistent
   }
   
   else if(MC_distribution != "centered"){
     
-    # berechne Gewichte wb := f_N(0,kappa_square)(Tb)/f_Nproposal(T_b)
-    # mit Rmpfr, falls der Nenner zu klein wird und wb sonst als inf betrachtet 
-    # würde. Dazu auch die log-exp-Transformation.
+    # Compute weights wb := f_N(0,kappa_square)(Tb)/f_Nproposal(T_b)
+    # Use Rmpfr in case the denominator becomes too small and would otherwise
+    # be treated as infinity. Apply log-exp transformation for stability.
     
     # f_N(0,kappa_square)(Tbs)
     log_noms <- Rmpfr::mpfr(dnorm(Tbs_survived, 
@@ -457,10 +452,10 @@ selective_inference <- function(n,
     # f_Nproposal(T_bs)
     log_denoms <- Rmpfr::mpfr(dsampFun(tsta = Tbs_survived, log = TRUE), 200)
     
-    # Berechne log(wb) = log(nom/denom) = log(nom) - log(denom)
+    # Compute log(wb) = log(nom/denom) = log(nom) - log(denom)
     log_wbs <- log_noms - log_denoms 
     
-    # Berechne wbs 
+    # Compute wbs 
     wbs <- exp(log_wbs)
   }
   }
@@ -468,7 +463,7 @@ selective_inference <- function(n,
   #-------------------------------------------------------------------------------
   
   if(output == "pvalCI"){
-  # Ausgabe der selective-inference p-Werte und KIs mithilfe der pval_CI-Funktion
+  # Return selective inference p-values and confidence intervals using pval_CI
   return(
     pval_CI(
       Tbs_survived = Tbs_survived,
@@ -500,6 +495,5 @@ selective_inference <- function(n,
   
   
 }
-
 
 
