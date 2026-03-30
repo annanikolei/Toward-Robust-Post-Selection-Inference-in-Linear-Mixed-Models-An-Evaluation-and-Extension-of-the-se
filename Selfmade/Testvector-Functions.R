@@ -213,9 +213,8 @@ testvec_marginal_not_efficient <- function(
 }
 
 #-------------------------------------------------------------------------------
-# konditionale Testvektor-Funktion
+# Conditional test vector function
 #-------------------------------------------------------------------------------
-
 
 testvec_conditional <- function(
     conditional_COV_estimator,
@@ -229,25 +228,23 @@ testvec_conditional <- function(
     splitRatio = 1
     
 ){
-  # Erstelle Listen, um pro conditional_COV_estimator die Parameter berechnen  
-  # zu können
+  # Create lists to compute parameters for each conditional_COV_estimator  
   vt_conditional_list <- kappa_square_conditional_list <- 
     dirV_conditional_list <-
     setNames(vector("list",length(conditional_COV_estimator)),
              conditional_COV_estimator) 
   
-  # Erstelle für die Varianz kappa_square eine Unterliste, die nach bayesian
-  # und not_bayesian unterscheidet
+  # Create sublists for kappa_square (variance) that distinguish
+  # between bayesian and not_bayesian
   for(iestimator in conditional_COV_estimator) { 
     kappa_square_conditional_list[[iestimator]] <- 
-      dirV_conditional_list[[iestimator]] <-                                        #?# hier bin ich unser bei dem dirV im paper unterscheiden die nicht nach bayesian dafür aber im package schon, deswegen unterscheide ich jetzt auch mal
+      dirV_conditional_list[[iestimator]] <-                                        
       setNames(vector("list",length(bayesian)),paste(bayesian))
   }
   
-  # Da es möglich ist, dass in which mehr als ein Koeffizient angegeben wird
-  # erstellen wir noch Unterlisten in den Listen, sodass sich jede auf einen
-  # Koeffizienten bezieht
-  # Erstelle Unterlisten
+  # Since multiple coefficients can be specified in which_conditional,
+  # create further sublists so each corresponds to one coefficient
+  # Create sublists
   for(iestimator in conditional_COV_estimator) { 
     vt_conditional_list[[iestimator]] <- 
       setNames(vector("list",length(which_conditional)),
@@ -261,67 +258,69 @@ testvec_conditional <- function(
   }
   
   
-  ## Testvektor vt und Varianz kappa_square und dirV
+  ## Test vector vt, variance kappa_square, and dirV
   for(iestimator in conditional_COV_estimator) {
     
-    # R
+    # Residual covariance matrix R
     R <- R_list[[iestimator]]
     
-    # für alle Koeffizienten in which_conditional gemeinsam:
-    # Testmatrix V für Testvektor vt bestimmen 
+    # For all coefficients in which_conditional:
+    # Compute test matrix V for vt 
     V_conditional <- K_inv_list[[iestimator]] %*% 
       Ct.R_inv_list[[iestimator]]
     
     
-    # Varianz kappa_square bestimmen: K_inv*C'*R_inv*C*K_inv
-    # für not_bayesian
+    # Compute variance kappa_square: K_inv * C' * R_inv * C * K_inv
+    # for not_bayesian
     kappa_square_conditional_all_coeffs <- K_inv_list[[iestimator]] %*% 
       Ct.R_inv.C_list[[iestimator]] %*%
       K_inv_list[[iestimator]]
     
-    # Varianz kappa_square bestimmen: K_inv 
-    # für bayesian 
+    # Compute variance kappa_square: K_inv 
+    # for bayesian 
     bayesian_kappa_square_conditional_all_coeffs <- K_inv_list[[iestimator]]
     
     
     
     
-    # Eintrag pro Koeffizient in das entsprechende Listenelement
+    # Assign entries per coefficient into the corresponding list elements
     for (iwhich in which_conditional){
-      # Name des Koeffizienten zur Eintragung in Liste
+      # Name of the coefficient for storing in the list
       coef_name <- paste("coefficient", iwhich)
       
-      # Testvektoren vt
+      # Test vectors vt
       vt_conditional_list[[iestimator]][[coef_name]] <-
         splitRatio * matrix(V_conditional[iwhich,], nrow = 1)
       
-      #Varianzen kappa_square und dirV 
+      # Variances kappa_square and dirV 
       if("not_bayesian" %in% bayesian){
-        # Varianz kappa_square:= e_j'*K_inv*C'*R_inv*C*K_inv*e_j
+        # Variance kappa_square := e_j' * K_inv * C' * R_inv * C * K_inv * e_j
         kappa_square_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]] <- 
-          splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich]                                    #?# hmm so ist das natürlich ein wenig ineffizient weil der ja immer die gesamte Matrix V berechnet und nicht direkt nur die für which relevanten Zeilen 
+          splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich]
         
-        #dirV:= R*v/kappa_square wobei v=t(vt)
+        # dirV := R * v / kappa_square, where v = t(vt)
         dirV_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           kappa_square_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]]} 
       
       
       if("bayesian" %in% bayesian){
-        # Varianz kappa_square:= e_j'*K_inv*e_j
+        # Variance kappa_square := e_j' * K_inv * e_j
         kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
-          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]                                     #?# hmm so ist das natürlich ein wenig ineffizient weil der ja immer die gesamte Matrix V berechnet und nicht direkt nur die für which relevanten Zeilen 
+          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]
         
-        #dirV:= R*v/kappa_square wobei v=t(vt)
+        # dirV := R * v / kappa_square, where v = t(vt)
         dirV_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]]}
       
     }
   }
+  
   result_list <- setNames(vector("list",3),c("vt_conditional_list",
                                              "kappa_square_conditional_list",
                                              "dirV_conditional_list"))
+  
   result_list$vt_conditional_list <- vt_conditional_list
   result_list$kappa_square_conditional_list <- kappa_square_conditional_list
   result_list$dirV_conditional_list <- dirV_conditional_list
