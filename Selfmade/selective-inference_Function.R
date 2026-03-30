@@ -244,7 +244,7 @@ if (!("future.apply" %in% rownames(installed.packages()))) {
   install.packages("future.apply")
 }
 library(future.apply)       
-plan(multisession) # uses all available cores; may be inefficient if tasks are small or overhead is high
+plan(multisession) 
 
 selective_inference <- function(n,
                                 vt,
