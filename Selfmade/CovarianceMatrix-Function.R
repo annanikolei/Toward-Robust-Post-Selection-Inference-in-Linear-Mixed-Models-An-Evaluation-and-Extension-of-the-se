@@ -326,9 +326,8 @@ SIGMA_function_diagT <- function(
 }
 
 #-------------------------------------------------------------------------------
-# Funktion zur Berechnung von Sigma_invers für die marginale Perspektive
+# Function to compute Sigma^{-1} for the marginal perspective
 #-------------------------------------------------------------------------------
-
 
 SIGMA_invers_function <- function(
     marginal_COV_estimator =  c("ModelEstimate", "ICM","supplied"),
@@ -349,26 +348,25 @@ SIGMA_invers_function <- function(
     n = NULL){ 
   
   
-  # Leere Liste für SIGMA_invers erstellen, sodass jedes Listenelement einen
-  #  Kovarianzmatrix-Schätzer enthalten kann
+  # Create empty list for SIGMA_invers so that each element can store
+  # one covariance matrix estimator
   SIGMA_invers <- setNames(vector("list", length(marginal_COV_estimator)),
                            marginal_COV_estimator)
   
   ## SUPPLIED
-  ## Falls marginal_COV_estimator == "supplied",d.h. falls Sigma angegeben ist
+  ## Case: marginal_COV_estimator == "supplied", i.e., Sigma is provided
   if(c("supplied") %in% marginal_COV_estimator){
     
-    # Falls Sigma_supplied angegeben, schreibe Inverse in SIGMA_invers-Matrix
+    # If Sigma_supplied is provided, compute and store its inverse
     if(!is.null(Sigma_supplied)){
       SIGMA_invers$supplied <- solve(Sigma_supplied)}
     
-    # Falls Sigma_supplied nicht angegeben ist aber R,Z,Lambda,Lamdat_supplied
-    #  oder G_supplied,dann berechne Sigma_supplied und trage diese Inverse in
-    #  SIGMA_invers ein
+    # If Sigma_supplied is not provided but R, Z, Lambda/Lambdat
+    # or G_supplied are provided, compute Sigma and its inverse
     else if (is.null(Sigma_supplied) && !is.null(Z_supplied)){
       
-      # Falls G_supplied nicht angegeben ist aber Lambda_supplied, berechne 
-      # damit die Schätzung von Sigma_invers, ansonsten mit G_supplied
+      # If G_supplied is not provided but Lambda_supplied is,
+      # compute G from Lambda; otherwise use G_supplied
       if(!is.null(G_supplied)){G_supplied <- G_supplied}
       
       else if (is.null(G_supplied) && !is.null(Lambda_supplied)) {
@@ -376,11 +374,10 @@ SIGMA_invers_function <- function(
         G_supplied <- Lambda_supplied %*% Lambdat_supplied}
       
       else if(is.null(G_supplied) && is.null(Lambda_supplied)){
-        stop("Da marginal_COV_estimator = 'supplied' muss für marginale 
-                  Perspektive 
-                  entweder Lambda_supplied oder G_supplied angegeben sein")}
+        stop("If marginal_COV_estimator = 'supplied', either Lambda_supplied 
+              or G_supplied must be provided for the marginal perspective")}
       
-      # Woodbury-Matrix-Identität zur effizienteren Berechnung der Inverse
+      # Use Woodbury matrix identity for efficient inversion
       SIGMA_invers$supplied <- tryCatch({
         woodbury_identity(R_inv = R_supplied_invers,
                           Z = Z_supplied,
@@ -392,20 +389,16 @@ SIGMA_invers_function <- function(
       
     }
     
-    # Else: Da "supplied angegeben wurde, muss auch Sigma_supplied nichtNULL 
-    # sein oder zumindest muss dann Z_supplied und G_supplied (bzw.Lambda) und 
-    # R_supplied angegeben sein 
-    else {stop("Da marginal_COV_estimator = 'supplied' muss für marginale 
-                  Perspektive 
-                  entweder Sigma_supplied oder (G_supplied bzw.Lambda_supplied)
-                  und Z_supplied angegeben sein")}
+    # Otherwise: required inputs for 'supplied' are missing
+    else {stop("If marginal_COV_estimator = 'supplied', either 
+                  Sigma_supplied or (G_supplied / Lambda_supplied)
+                  and Z_supplied must be provided")}
   }
   
   ## MODELESTIMATE
-  ## Falls marginal_COV_estimator == "ModelEstimate", d.h. falls Sigma durch 
-  ## den plug-in Schätzer Sigma_dach also ModelEstimate geschätzt werden soll
+  ## Case: Sigma is estimated via plug-in estimator (model-based)
   if(c("ModelEstimate") %in% marginal_COV_estimator){
-    # Berechne den plug-in Schätzer für SIGMA_invers mit Woodbury-Matrix
+    # Compute plug-in estimator for SIGMA^{-1} using Woodbury identity
     
     SIGMA_invers$ModelEstimate <- tryCatch({
       woodbury_identity(R_inv = R_est_invers,
@@ -418,11 +411,10 @@ SIGMA_invers_function <- function(
   }
   
   ## ICM
-  ## Falls marginal_COV_estimator == "ICM", d.h. falls Sigma durch 
-  ## den konservativen minMod Schätzer also ICM geschätzt werden soll
+  ## Case: Sigma is estimated via conservative minMod estimator (ICM)
   if(c("ICM") %in% marginal_COV_estimator){
     
-    # Berechne den ICM Schätzer für SIGMA_invers
+    # Compute ICM estimator for SIGMA^{-1}
     model <- fit_ICM
     SIGMA_invers$ICM <- Sigma_invers_ICM(model = model,
                                          n = n,
