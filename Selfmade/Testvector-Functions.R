@@ -123,7 +123,7 @@ testvec_marginal <- function(
 }
 
 #-------------------------------------------------------------------------------
-# marginale not efficient Testvektor-Funktion
+# Marginal not efficient test vector function
 #-------------------------------------------------------------------------------
 
 testvec_marginal_not_efficient <- function(
@@ -134,18 +134,16 @@ testvec_marginal_not_efficient <- function(
     SIGMA,
     splitRatio = 1 ){
   
-  # Erstelle Listen, um pro marginal_not_efficient_COV_estimator die Parameter berechnen zu 
-  # können
+  # Create lists to compute parameters for each marginal_not_efficient_COV_estimator
   
   vt_marginal_not_efficient_list <- kappa_square_marginal_not_efficient_list <- dirV_marginal_not_efficient_list <-
     setNames(vector("list",length(marginal_not_efficient_COV_estimator)),
              marginal_not_efficient_COV_estimator) 
   
-  # Da es möglich ist, dass in which mehr als ein Koeffizient angegeben wird
-  # erstellen wir noch Unterlisten in den Listen, sodass sich jede auf einen
-  # Koeffizienten bezieht
+  # Since multiple coefficients can be specified in which_marginal,
+  # create sublists so each corresponds to one coefficient
   
-  # Erstelle Unterlisten
+  # Create sublists
   for(iestimator in marginal_not_efficient_COV_estimator) { 
     vt_marginal_not_efficient_list[[iestimator]] <- 
       kappa_square_marginal_not_efficient_list[[iestimator]] <- 
@@ -155,46 +153,46 @@ testvec_marginal_not_efficient <- function(
   }
   
   
-  ## Testvektor vt und Varianz kappa_square
-  # Bemerkung: Wir berechnen  die not efficient Teststatistik
-  # vt:= e_j'*(X_A'*X_A)_inv' * X_A' 
+  ## Test vector vt and variance kappa_square
+  # Note: we compute the not efficient test statistic
+  # vt := e_j' * (X_A' * X_A)^{-1}' * X_A'
   X_A_workt <- t(X_A_work)
   X_At.X_A_inv <- solve(X_A_workt %*% X_A_work)
   
-  # für alle Koeffizienten in which_marginal gemeinsam:
-  # Testvektor vt bestimmen 
-  vt_marginal_not_efficient_all_coeffs <- t(X_At.X_A_inv) %*% X_A_workt            #!# das t() könnte man weglassen
+  # For all coefficients in which_marginal:
+  # Compute test vector vt
+  vt_marginal_not_efficient_all_coeffs <- t(X_At.X_A_inv) %*% X_A_workt
   
   for(iestimator in marginal_not_efficient_COV_estimator) {
-    # das Matrixprodukt (X_A'*Sigma_inv*X_A)_inv kann man sowohl für
-    # die Testvektordefinition als auch für die Varianz gebrauchen
+    # Compute variance matrix
     X_At.Sigma.X_A <- X_A_workt %*% SIGMA[[iestimator]] %*% X_A_work
-    kappasquare_marginal_not_efficient_all_coeffs <- X_At.X_A_inv %*% X_At.Sigma.X_A %*% X_At.X_A_inv
+    kappasquare_marginal_not_efficient_all_coeffs <- 
+      X_At.X_A_inv %*% X_At.Sigma.X_A %*% X_At.X_A_inv
     
-    # robust covariance matrix for all coefficients
+    # Robust covariance matrix (not supported here)
     if(length(robust_std.errors_marginal) != 1){ 
-      stop("robust_std.errors_marginal nicht möglich für marginal_not_efficient.")}
+      stop("robust_std.errors_marginal not allowed for marginal_not_efficient.")}
     
-    if(robust_std.errors_marginal != FALSE){warning("robust_std.errors_marginal nicht 
-                                                   möglich für marginal_not_efficient. Normale Standardfehler werden berichtet.")}
+    if(robust_std.errors_marginal != FALSE){
+      warning("robust_std.errors_marginal not allowed for marginal_not_efficient. 
+               Standard errors are reported without robustness correction.")}
     
     
-    # Eintrag pro Koeffizient in das entsprechende Listenelement
+    # Assign entries per coefficient into the corresponding list element
     for (iwhich in which_marginal){
-      # Name des Koeffizienten zur Eintragung in Liste
+      # Name of the coefficient
       coef_name <- paste("coefficient", iwhich)
       
-      # Testvektoren vt
+      # Test vectors vt
       vt_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
         splitRatio * matrix(vt_marginal_not_efficient_all_coeffs[iwhich,],nrow = 1)
       
-      # Varianz kappa_square
-      # not efficient:
+      # Variance kappa_square
+      # not efficient case
       kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
         splitRatio^2 *kappasquare_marginal_not_efficient_all_coeffs[iwhich,iwhich] 
       
-      # dirV:= Sigma * v/kappa_square_marginal 
-      
+      # dirV := Sigma * v / kappa_square_marginal 
       dirV_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
         SIGMA[[iestimator]]%*%t(vt_marginal_not_efficient_list[[iestimator]][[coef_name]])/
         kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]]
@@ -205,6 +203,7 @@ testvec_marginal_not_efficient <- function(
   result_list <- setNames(vector("list",3),c("vt_marginal_not_efficient_list",
                                              "kappa_square_marginal_not_efficient_list",
                                              "dirV_marginal_not_efficient_list"))
+  
   result_list$vt_marginal_not_efficient_list <- vt_marginal_not_efficient_list
   result_list$kappa_square_marginal_not_efficient_list <- kappa_square_marginal_not_efficient_list
   result_list$dirV_marginal_not_efficient_list <- dirV_marginal_not_efficient_list
