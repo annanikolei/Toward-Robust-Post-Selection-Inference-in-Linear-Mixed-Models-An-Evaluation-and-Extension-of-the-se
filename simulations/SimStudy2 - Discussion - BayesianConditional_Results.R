@@ -10,6 +10,7 @@ source("SimStudy2 - Discussion - BayesianConditional_SelectionProcess.R")
 source("SimStudy2 - Discussion - BayesianConditional_one_simulation.R")
 source("SimStudy2 - Discussion - BayesianConditional_simulation_study.R")
 
+setwd("~/SimStudy2_Results")
 SimulationStudy_SanityCheck <-
   SimSanity_simulation_study(  n_iter = 1000, #number of replications per condition
                                n_obs = 40^2, # number of observations
@@ -31,6 +32,7 @@ file=paste0("SimStudy2_Discussion_Bayesian_conditional",".RDS"))
 
 
 ## QQ-plots --------------------------------------------------------------------
+setwd("~/SimStudy2_Results")
 SimulationStudy_SanityCheck <- readRDS("SimStudy2_Discussion_Bayesian_conditional.RDS")
 SimSanity_Results <- SimulationStudy_SanityCheck$post_selection_pvalues
 
