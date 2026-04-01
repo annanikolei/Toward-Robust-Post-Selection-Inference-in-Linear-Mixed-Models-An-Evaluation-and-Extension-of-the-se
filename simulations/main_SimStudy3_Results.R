@@ -16,7 +16,7 @@ R_squared = 0.3
 n_obs = 40^2 ; m = 40
 
 # load fixed predictor matriced
-dgp_X_output <- readRDS("~/dgp_X_output_n_obs=1600_m=40.RDS")
+dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
 load(paste0("~/SimulationResults_supplied_D/SIM3_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
