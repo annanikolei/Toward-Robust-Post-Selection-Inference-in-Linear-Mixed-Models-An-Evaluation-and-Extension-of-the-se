@@ -127,13 +127,13 @@ list_singular<- lapply(Simulation_supplied_D[["R_squared = 0.3"]], function(x) x
 setwd("~/SimulationResults_supplied_D")
 
 save(list_supplied_D_work, 
-     file = "list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
+     file = "SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
 
 save(list_convergence, 
-     file = "convergenceIssues_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
+     file = "SIM4_convergenceIssues_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
 
 save(list_singular, 
-     file = "singularIssues_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
+     file = "SIM4_singularIssues_fullrandom=(Intercept)X2X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
 
 
 
