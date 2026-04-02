@@ -2,6 +2,7 @@
 # Main function (mocasin-function)
 ################################################################################
 
+source("install.packages.R")
 source("helper_functions.R")
 source("CR-Standard_errors.R") # not important
 source("CovarianceMatrix-Function.R")
