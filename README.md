@@ -18,7 +18,7 @@ This repository contains the code accompanying our paper on **valid post-selecti
 ## Reproducibility
 
 * The `main_...` scripts in `simulations/` reproduce the simulation studies.
-* The `selfmade/` folder provides a standalone implementation of the proposed method.
+* The `Selfmade/` folder provides a standalone implementation of the proposed method.
 * All required result files for evaluation and plotting are included where needed.
 
 ## Requirements
