@@ -4,7 +4,7 @@ This repository contains the code accompanying our paper on **valid post-selecti
 
 ## Structure
 
-* `selfmade/`
+* `Selfmade/`
   Implementation of the proposed *selfmade* approach (Rügamer et al., 2022).
   Contains a standalone script to run the method.
 
