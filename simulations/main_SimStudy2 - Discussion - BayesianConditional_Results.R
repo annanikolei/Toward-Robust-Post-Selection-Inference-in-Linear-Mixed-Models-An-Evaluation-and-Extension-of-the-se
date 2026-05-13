@@ -10,7 +10,7 @@ source("SimStudy2 - Discussion - BayesianConditional_SelectionProcess.R")
 source("SimStudy2 - Discussion - BayesianConditional_one_simulation.R")
 source("SimStudy2 - Discussion - BayesianConditional_simulation_study.R")
 
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 SimulationStudy_SanityCheck <-
   SimSanity_simulation_study(  n_iter = 1000, #number of replications per condition
                                n_obs = 40^2, # number of observations
@@ -32,7 +32,7 @@ file=paste0("SimStudy2_Discussion_Bayesian_conditional",".RDS"))
 
 
 ## QQ-plots --------------------------------------------------------------------
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 SimulationStudy_SanityCheck <- readRDS("SimStudy2_Discussion_Bayesian_conditional.RDS")
 SimSanity_Results <- SimulationStudy_SanityCheck$post_selection_pvalues
 
@@ -106,7 +106,6 @@ plot_conditional_no_misspecification <- ggplot(results_all_conditions_df,
   )
 plot_conditional_no_misspecification
 
-setwd("~/Documents/Forschung/Post-selection inference/Projekt 1 /Figures/Figures project 1")
 ggsave("plot_conditional_no_misspecification.png", 
        plot = plot_conditional_no_misspecification, 
        dpi = 900, width = 5, height = 6, units = "in")
