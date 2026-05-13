@@ -14,7 +14,7 @@ source("SimStudy1_dgp.R")
 source("SimStudy1_one_simulation.R")
 source("SimStudy1_simulation_study.R")
 
-setwd("~/SimStudy1_Results")
+setwd("SimStudy1_Results")
 ## Run Simulation
 
 N <- 3000  # Number of Iterations
@@ -76,7 +76,7 @@ for(n_obs in c(990, 4830)){
 
 
 ### Results ####
-setwd("~/SimStudy1_Results")
+setwd("SimStudy1_Results")
 
 ## Create QQ-Plots
 
