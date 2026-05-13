@@ -19,13 +19,13 @@ n_obs = 40^2 ; m = 40
 dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
-load(paste0("~/SimulationResults_supplied_D/SIM2_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
+load(paste0("SimulationResults_supplied_D/SIM2_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
 ########################
 # Run Simulations
 ########################
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 
 ## All perspectives together 
 N <- 1000
@@ -367,7 +367,7 @@ saveRDS(SimStudy2_convergence, "SimStudy2_convergence_singular_info_allcondition
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 SimStudy2_Results <- readRDS("SimStudy2_pvalues_MCresamplings_allconditions_R2_0.3_1000MC.RDS")
 
 SimStudy2_Results$pval_type <- ifelse(SimStudy2_Results$estimator%in% c("naive"),"Naive", ifelse(SimStudy2_Results$estimator%in% c("fullCandidate","fullCandidate_supplied"),"Standard (no selection)","Selfmade"))
