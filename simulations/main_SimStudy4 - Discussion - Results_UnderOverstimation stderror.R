@@ -25,7 +25,7 @@ n_obs = 40^2 ; m = 40
 dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
-load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
+load(paste0("SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
 
@@ -33,7 +33,7 @@ load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom
 ## Run the Simulation ##
 ################################################################################
 
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 # Number of iterations
 N <- 1000
@@ -143,7 +143,7 @@ for (i in start_iter:N) {
 ################################################################################
 ## QQ-Plots, hist, standard error ##
 ################################################################################
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 SimulationStudy4_underestimation <- readRDS("Discussion_SimulationStudy4_underestimation_stderror.RDS")
 SimulationStudy4_overestimation <- readRDS("Discussion_SimulationStudy4_overestimation_stderror.RDS")
