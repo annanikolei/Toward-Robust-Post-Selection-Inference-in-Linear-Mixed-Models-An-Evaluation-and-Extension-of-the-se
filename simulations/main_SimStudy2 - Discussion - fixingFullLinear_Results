@@ -22,12 +22,12 @@ n_obs = 40^2 ; m = 40
 dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
-load(paste0("~/SimulationResults_supplied_D/SIM2_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
+load(paste0("SimulationResults_supplied_D/SIM2_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 ########################
 # Run Simulation
 ########################
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 library(dplyr)
 
 N <- 1000
@@ -79,7 +79,7 @@ for (i in start_iter:N) {
 
 
 ## QQ-plots --------------------------------------------------------------------
-setwd("~/SimStudy2_Results")
+setwd("SimStudy2_Results")
 SimulationStudy2_fullCandidateTruth <- readRDS("SimulationStudy2_Discussion_fullLinear_fixed.RDS")
 SimStudy2_fixedLinear_Results <- do.call(rbind, lapply(SimulationStudy2_fullCandidateTruth,
                                            function(x) x$post_selection_pvalues)
