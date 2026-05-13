@@ -22,7 +22,7 @@ n_obs = 40^2 ; m = 40
 dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
-load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
+load(paste0("SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
 
@@ -30,7 +30,7 @@ load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom
 ## Run the Simulation ##
 ################################################################################
 
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 # Change SelFun so that model (ii) always gets chosen
 SelFun <- function(dat, full_model) {
@@ -104,7 +104,7 @@ for (i in start_iter:N) {
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 SimulationStudy4_fixedRE <- readRDS("Discussion_SimulationStudy4_fixing_the_random_effects_structure_500MC.RDS")
 SimStudy4_Results <- do.call(rbind, lapply(SimulationStudy4_fixedRE,
