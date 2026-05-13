@@ -19,14 +19,14 @@ n_obs = 40^2 ; m = 40
 dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 
 # load list_supplied_D_work
-load(paste0("~/SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
+load(paste0("SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
 
 ################################################################################
 ## Run the Simulation ##
 ################################################################################
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 # Number of planned iterations
 N <- 1000
@@ -251,7 +251,7 @@ for (i in start_iter:N) {
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 SimulationStudy4_marginal_not_efficient_RdiagTRUE <- readRDS("SelFun=anova_SimulationStudy4_random=InterceptX2_marginal(not_eff)_RdiagTRUE_n=40_R2_0.3_1000MC.RDS")
 SimulationStudy4_marginal_not_efficient_RdiagFALSE <- readRDS("SelFun=anova_SimulationStudy4_random=InterceptX2_marginal_not_efficient_RdiagFALSE_n=40_R2_0.3_1000MC.RDS")
