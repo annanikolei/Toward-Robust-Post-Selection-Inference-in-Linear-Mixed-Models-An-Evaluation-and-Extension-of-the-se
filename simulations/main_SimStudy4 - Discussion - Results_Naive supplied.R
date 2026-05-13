@@ -25,7 +25,7 @@ dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 ## Run the Simulation ##
 ################################################################################
 
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 
 # Number of planned iterations
@@ -81,7 +81,7 @@ for (i in start_iter:N) {
 ################################################################################
 ## QQ-Plots
 ################################################################################
-setwd("~/SimStudy4_Results")
+setwd("SimStudy4_Results")
 
 SimulationStudy4_Naive_supplied <- do.call(rbind, lapply(readRDS("Discussion_SimulationStudy4_Naive_supplied_500MC.RDS"), `[[`, 1))
 
