@@ -13,7 +13,7 @@ source("RandomX_SimStudy3_simulation_study.R")
 
 
 R_squared = 0.3
-R_squared = "great"
+R_squared = "great" # this is the condition with the small level-1 resiudal variance
 n_obs = 40^2 ; m = 40
 
 
