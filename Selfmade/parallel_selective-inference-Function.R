@@ -129,7 +129,7 @@ pval_CI <- function(Tbs_survived, # all MC test statistics that lie in the infer
   ## If computation of (1-alpha)% CI bounds is not possible
   # This happens if all surviving MC Tbs are either greater or smaller than t_obs,
   # since a rho must be found such that Ceta or 1-Ceta equals alpha/2 or 1-alpha/2.
-  if(symmetric_selection == TRUE){
+  # if(symmetric_selection == TRUE){
     if(all(Tbs_survived > rep(t_obs,number_survived_MC)) |
        all(Tbs_survived < rep(t_obs,number_survived_MC)) ){
       return(data.frame(number_survived_MC = number_survived_MC,
@@ -227,7 +227,7 @@ pval_CI <- function(Tbs_survived, # all MC test statistics that lie in the infer
                       cil.smalleralpha = cil.smalleralpha,
                       ciu.smalleralpha = ciu.smalleralpha,
                       total_resamplings_due_to_convergence))
-  }       
+ # }       
   
   
   
