@@ -157,127 +157,156 @@ sim_list <- list(
 
 ## QQ-plots --------------------------------------------------------------------
 
-for(sim_name in names(sim_list)){
+for (sim_name in names(sim_list)) {
   
   SimStudy4_Discussion_Results <- do.call(
     rbind,
     lapply(sim_list[[sim_name]], function(x) x[[1]])
   )
-
-
-SimStudy4_Discussion_Results$pval_type <- ifelse(SimStudy4_Discussion_Results$method%in% c("Naive"),"Naive","Standard (no selection)")
-
-SimStudy4_Discussion_Results$estimator <- "ModelEstimate_CR2"
-
-SimStudy4_Discussion_Results$coefficient <- "L1-noise~(random~slope)~x[4]"
-SimStudy4_Discussion_Results$working_model <-  "(Intercept)X2"
-
-library(ggplot2)
-library(dplyr)
-
-
-results_all_conditions_df <- SimStudy4_Discussion_Results  %>%
-  mutate(
-    label_facet = paste0(
-      #"R² = ", R_squared_pseudo,
-      "Selected/Working Random Effects = ", working_model
-      
-    )
-  )
-
-
-results_all_conditions_df$estimator <- factor(results_all_conditions_df$estimator)
-
-
-results_all_conditions_df$pval_type <-relevel(as.factor(results_all_conditions_df$pval_type),"Standard (no selection)")
-
-#-------------------------
-# Manual color palette
-# -----------------------------
-estimator_colors <- c(
-  "fullCandidate_supplied" ="black",
-  "supplied"            = "#009E73",  # Grün
-  "ModelEstimate"       =  "#8C510A",  # braun
-  "ModelEstimate_CR2"       =  "#8C510A",  # braun
-  "ICM"                 = "#D55E00",  # Orange
-  "VarY"                =  "#0072B2",  # Blau
-  "ModelEstimate_SIGMA" = "#56B4E9",  # Hellblau
-  "ModelEstimate_R"     = "#E69F00",  # Gelb-Orange
-  "ICM_SIGMA"           = "#CC79A7",  # Violett
-  "ICM_R"               = "#6A3D9A",  # Dunkellila
-  # deutlich dunkleres Türkis (petrol)
-  "fullCandidate"           = "white"
   
-)
-
-# -----------------------------
-# Plot
-# -----------------------------
-
-
-plot_SimStudy4_Discussion <- ggplot(results_all_conditions_df, 
-                                                   aes(
-                                                     sample = pvals,
-                                                     color  = estimator,
-                                                     linetype = pval_type)) +
-  geom_abline(slope = 1, intercept = 0, color = "grey") +
-  theme_minimal(base_size = 18) +  # Basis-Schriftgröße
-  theme(
-    strip.background = element_rect(fill = "lightgrey", color = NA),  
-    strip.text = element_text(color = "black"),
-    legend.position = "bottom",       # <--- Hier Legende unten setzen
-    legend.box = "vertical"
-  ) + 
-   facet_grid(
-    . ~ label_facet + coefficient,
-    labeller = labeller(
-      coefficient = label_parsed,
-      label_facet = label_wrap_gen(width = 35)
-    )
-  )+
-  geom_qq(  
-    distribution = stats::qunif, size = 0.8, geom = "line") +
-  labs(
-    title = "",
-    x = "Expected p-values",
-    y = "Observed p-values",
-    color = "Estimator",
-    linetype = "p-value type"
-  ) +
-  guides(
-    color = guide_legend(order = 1),
-    linetype = guide_legend(order = 2)
-  ) +
-  scale_color_manual(
-    values = estimator_colors,
-    labels = function(x) parse(text = c(
-      fullCandidate_supplied = "fullCandidate (supplied)",
-      supplied                 = "supplied",
-      ModelEstimate               = "ModelEstimate",
-      ModelEstimate_CR2            = "ModelEstimate(CR2)",
-      ICM                         = "ICM",
-      VarY                        = "VarY",
-      ModelEstimate_SIGMA         = "ModelEstimate[Sigma]",
-      ModelEstimate_R             = "ModelEstimate[R]",
-      ICM_SIGMA                   = "ICM[Sigma]",
-      ICM_R                       = "ICM[R]",
-      fullCandidate               = "fullCandidate"
-    )[x])
+  SimStudy4_Discussion_Results$pval_type <- ifelse(
+    SimStudy4_Discussion_Results$method %in% c("Naive"),
+    "Naive",
+    "Standard (no selection)"
   )
-plot_SimStudy4_Discussion
-
-ggsave(
-  paste0("plot_SimStudy4_Discussion", sim_name, ".png"),
-  plot = plot,
-  dpi = 900,
-  width = 6,
-  height = 6,
-  units = "in"
-)
-
+  
+  SimStudy4_Discussion_Results$estimator <- "ModelEstimate_CR2"
+  
+  SimStudy4_Discussion_Results$coefficient <- "L1-noise~(random~slope)~x[4]"
+  
+  SimStudy4_Discussion_Results$working_model <- "(Intercept)X2"
+  
+  
+  library(ggplot2)
+  library(dplyr)
+  
+  
+  results_all_conditions_df <- SimStudy4_Discussion_Results %>%
+    mutate(
+      label_facet = paste0(
+        "Selected/Working Random Effects = ",
+        working_model
+      )
+    )
+  
+  
+  results_all_conditions_df$estimator <- factor(
+    results_all_conditions_df$estimator
+  )
+  
+  results_all_conditions_df$pval_type <- relevel(
+    as.factor(results_all_conditions_df$pval_type),
+    "Standard (no selection)"
+  )
+  
+  
+  # -----------------------------
+  # Manual color palette
+  # -----------------------------
+  
+  estimator_colors <- c(
+    "fullCandidate_supplied" = "black",
+    "supplied"               = "#009E73",
+    "ModelEstimate"          = "#8C510A",
+    "ModelEstimate_CR2"      = "#8C510A",
+    "ICM"                    = "#D55E00",
+    "VarY"                   = "#0072B2",
+    "ModelEstimate_SIGMA"    = "#56B4E9",
+    "ModelEstimate_R"        = "#E69F00",
+    "ICM_SIGMA"              = "#CC79A7",
+    "ICM_R"                  = "#6A3D9A",
+    "fullCandidate"          = "white"
+  )
+  
+  
+  # -----------------------------
+  # Plot
+  # -----------------------------
+  
+  plot_SimStudy4_Discussion <- ggplot(
+    results_all_conditions_df,
+    aes(
+      sample = pvals,
+      color = estimator,
+      linetype = pval_type
+    )
+  ) +
+    geom_abline(
+      slope = 1,
+      intercept = 0,
+      color = "grey"
+    ) +
+    geom_qq(
+      distribution = stats::qunif,
+      size = 0.8,
+      geom = "line"
+    ) +
+    theme_minimal(base_size = 18) +
+    theme(
+      strip.background = element_rect(
+        fill = "lightgrey",
+        color = NA
+      ),
+      strip.text = element_text(color = "black"),
+      legend.position = "bottom",
+      legend.box = "vertical"
+    ) +
+    facet_grid(
+      . ~ label_facet + coefficient,
+      labeller = labeller(
+        coefficient = label_parsed,
+        label_facet = label_wrap_gen(width = 35)
+      )
+    ) +
+    labs(
+      title = "",
+      x = "Expected p-values",
+      y = "Observed p-values",
+      color = "Estimator",
+      linetype = "p-value type"
+    ) +
+    guides(
+      color = guide_legend(order = 1),
+      linetype = guide_legend(order = 2)
+    ) +
+    scale_color_manual(
+      values = estimator_colors,
+      labels = c(
+        "fullCandidate_supplied" = "fullCandidate (supplied)",
+        "supplied"               = "supplied",
+        "ModelEstimate"          = "ModelEstimate",
+        "ModelEstimate_CR2"      = "ModelEstimate(CR2)",
+        "ICM"                    = "ICM",
+        "VarY"                   = "VarY",
+        "ModelEstimate_SIGMA"    = "ModelEstimate[Sigma]",
+        "ModelEstimate_R"        = "ModelEstimate[R]",
+        "ICM_SIGMA"              = "ICM[Sigma]",
+        "ICM_R"                  = "ICM[R]",
+        "fullCandidate"          = "fullCandidate"
+      )
+    )
+  
+  
+  print(plot_SimStudy4_Discussion)
+  
+  
+  # -----------------------------
+  # Save plot
+  # -----------------------------
+  
+  ggsave(
+    filename = paste0(
+      "plot_SimStudy4_Discussion_",
+      sim_name,
+      ".png"
+    ),
+    plot = plot_SimStudy4_Discussion,
+    dpi = 300,
+    width = 6,
+    height = 6,
+    units = "in"
+  )
 }
-
-
 ## hist and standard errors-------------------------------------
 sim_list <- list(
   underestimation = SimulationStudy4_underestimation,
@@ -323,7 +352,7 @@ for(sim_name in names(sim_list)){
     plot_est,
     width = 8,
     height = 6,
-    dpi = 600
+    dpi = 300
   )
   
   
@@ -351,7 +380,7 @@ for(sim_name in names(sim_list)){
     plot_se,
     width = 8,
     height = 6,
-    dpi = 600
+    dpi = 300
   )
   
   
@@ -379,7 +408,7 @@ for(sim_name in names(sim_list)){
     plot_p,
     width = 8,
     height = 6,
-    dpi = 600
+    dpi = 300
   )
   
   
