@@ -6,7 +6,7 @@ source("selfmade**.R")
 
 source("SimStudy2 - Discussion - BayesianConditional_helper.R")
 source("SimStudy2 - Discussion - BayesianConditional_dgp.R")
-source("SimStudy2 - Discussion - BayesianConditional_SelectionProcess.R")
+source("SimStudy2 - Discussion - BayesianConditional_Selection_Process.R")
 source("SimStudy2 - Discussion - BayesianConditional_one_simulation.R")
 source("SimStudy2 - Discussion - BayesianConditional_simulation_study.R")
 
