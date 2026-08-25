@@ -24,7 +24,8 @@ mocasin <- function(mod, # fitted model (selected model fit)
                                             # proposal distribution ("proposal")
                                             # or from N(0, kappa^2) ("centered")
                     bayesian = c("not_bayesian",
-                                 "bayesian"), # whether to use Bayesian covariance matrix
+                                 "bayesian",
+                                 "bayesian_corrected"), # whether to use Bayesian covariance matrix
                     which_marginal = NULL, # selection of fixed effects (marginal perspective)
                     which_conditional = NULL, # selection of fixed + random effects (conditional perspective)
                     rho_H0 = 0, # null hypothesis value for all tested coefficients
