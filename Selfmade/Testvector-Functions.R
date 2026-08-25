@@ -304,7 +304,7 @@ testvec_conditional <- function(
           kappa_square_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]]} 
       
       
-      if("bayesian" %in% bayesian){
+      if("bayesian" %in% bayesian){ # as in selfmade implementation 
         # Variance kappa_square := e_j' * K_inv * e_j
         kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
           splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]
@@ -313,6 +313,16 @@ testvec_conditional <- function(
         dirV_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]]}
+
+        if("bayesian_corrected" %in% bayesian){ # as in paper (Rügamer et al., 2022)
+        # Variance kappa_square:= e_j'*K_inv*e_j
+        kappa_square_conditional_list[[iestimator]][["bayesian_corrected"]][[coef_name]] <- 
+          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]                                    
+       
+        #dirV:= R*v/kappa_square_freq 
+        dirV_conditional_list[[iestimator]][["bayesian_corrected"]][[coef_name]] <- 
+          R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
+          (splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich])  }
       
     }
   }
