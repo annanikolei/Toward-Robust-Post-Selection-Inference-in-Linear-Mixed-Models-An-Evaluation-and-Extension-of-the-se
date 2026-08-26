@@ -242,7 +242,7 @@ make_clustered_errors_KOVbdiag <- function(balanced = TRUE,
   }
   
   # Construct block-diagonal covariance matrix
-  KOVbdiag <- cluster_adjustment * bdiag(Res_blocks)
+  KOVbdiag <- cluster_adjustment * as.matrix(bdiag(Res_blocks))
   
   return(KOVbdiag)
 }
