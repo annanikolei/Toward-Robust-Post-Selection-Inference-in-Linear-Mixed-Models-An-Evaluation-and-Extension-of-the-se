@@ -102,20 +102,20 @@ Noise_plot <- ggplot(df_noise, aes(x = x, y = y)) +
   labs(title = "Working Noise", x = "x", y = "y") +
   
   # Annotate true functional form
-  annotate("text", x = 1.5, y = -2, 
+  annotate("text", x = 1.5, y = -1.5, 
            label = "x^2 - 4*x + 1", 
            parse = TRUE, 
            color = "blue", 
-           size = 5) +
+           size = 7) +
   
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 20) +
   theme(
-    plot.title = element_text(size = 16),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 20),
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 20),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    legend.text = element_text(size = 13)
+    legend.text = element_text(size = 20)
   )
 
 # ---------------------------------------------------------------------------
@@ -154,20 +154,20 @@ Signal_plot <- ggplot(df_signal, aes(x = x, y = y)) +
   labs(title = "Working Signal", x = "x", y = "y") +
   
   # Annotate true model
-  annotate("text", x = 0.5, y = -2, 
+  annotate("text", x = 0.7, y = -2, 
            label = "-0.5*x^2 + 1", 
            parse = TRUE, 
            color = "blue", 
-           size = 5) +
+           size = 7) +
   
-  theme_minimal(base_size = 14) +  
+  theme_minimal(base_size = 20) +  
   theme(
-    plot.title = element_text(size = 16),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 20),
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 20),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    legend.text = element_text(size = 13)
+    legend.text = element_text(size = 20)
   )
 
 library(patchwork)
@@ -178,4 +178,4 @@ DataGenerating_WM_plots <- Noise_plot + Signal_plot
 # Save combined plot as high-resolution image
 ggsave("DataGenerating_WM_plots.png", 
        plot = DataGenerating_WM_plots, 
-       dpi = 900, width = 8, height = 4, units = "in")
+       dpi = 300, width = 8, height = 4, units = "in")
