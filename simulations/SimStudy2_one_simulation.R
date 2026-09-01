@@ -20,6 +20,7 @@ SimStudy2_one_simulation <- function(l2.id, # id variable for level-2 units
                                                 nrow = 3, byrow=T) , # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
                                      list_supplied_D_work,
                                      perspective, # marginal and/or conditional (for robust std. errors we only need marginal)
+                                     bayesian= c("bayesian"),
                                      R_diag = T,
                                      HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
                                      cadjust = F, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
@@ -284,7 +285,7 @@ SimStudy2_one_simulation <- function(l2.id, # id variable for level-2 units
             this_y = dat$y, 
             B_MCsamples = B_MCsamples, # number of MC-samples
             MC_distribution = "proposal",
-            bayesian = c("bayesian"),
+            bayesian = bayesian,
             which_marginal = which_coeffs, 
             which_conditional = which_coeffs, 
             rho_H0 = 0, 
@@ -372,6 +373,10 @@ SimStudy2_one_simulation <- function(l2.id, # id variable for level-2 units
                   working_model = working_vars)))
   
 }
+
+
+
+
 
 
 
