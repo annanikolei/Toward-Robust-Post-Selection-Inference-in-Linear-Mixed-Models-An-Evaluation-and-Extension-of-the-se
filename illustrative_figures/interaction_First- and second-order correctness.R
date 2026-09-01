@@ -70,14 +70,14 @@ first_order_assumption_plot <- ggplot(data, aes(x = x, y = y)) +
   geom_abline(intercept = coefficients(approx_model)[1],
               slope = coefficients(approx_model)[2], color = "red", size = 1) +
   
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 20) +
   theme(
-    plot.title = element_text(size = 16),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 20),
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 20),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    legend.text = element_text(size = 13)
+    legend.text = element_text(size = 20)
   ) +
   
   labs(title = "",
@@ -116,7 +116,7 @@ interaction_residuals_plot <-
   geom_point(alpha = 0.3, color = "mediumpurple") +
   geom_hline(yintercept = 0, color = "black", size = 1, linetype = "dashed") +
   coord_cartesian(ylim = c(ymin, ymax), xlim = c(-15, 15)) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 20) +
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
@@ -129,7 +129,7 @@ workingModel_residuals_plot <-
   geom_point(alpha = 0.3, color = "red") +
   geom_hline(yintercept = 0, color = "black", size = 1, linetype = "dashed") +
   coord_cartesian(ylim = c(ymin, ymax), xlim = c(-15, 15)) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 20) +
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
@@ -295,14 +295,14 @@ SKV_plot <- ggplot(df_long, aes(x = Estimated_Regression_Weight_for_x, fill = Mo
   geom_histogram(alpha = 0.5, 
                  bins = 70, 
                  position = "identity") +
-  theme_minimal(base_size = 14) +  
+  theme_minimal(base_size = 20) +  
   theme(
-    plot.title = element_text(size = 16),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 20),
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 20),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    legend.text = element_text(size = 13)
+    legend.text = element_text(size = 20)
   ) +
   labs(
     x = "Estimated Regression Weight for x",
@@ -323,4 +323,5 @@ correctness_assumptions_plots <-
 # Save final figure
 ggsave("correctness_assumptions_plots.png", 
        plot = correctness_assumptions_plots, 
-       dpi = 900, width = 8, height = 5, units = "in")
+       dpi = 300, width = 10, height = 5, units = "in")
+
