@@ -20,6 +20,7 @@ SimStudy3_simulation_study <-
                         0.2,1.5,0.2,
                         0.1,0.2,1.5),nrow=3, byrow=T), # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
            perspective = c("marginal","conditional"), # marginal and/or conditional (for robust std. errors we only need marginal)
+           bayesian= c("bayesian"),
            robust_std.errors_marginal = F, # (which) robust std.err in marginal perspective
            R_diag =T,
            HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
@@ -83,6 +84,7 @@ SimStudy3_simulation_study <-
                                        D = D, 
                                        list_supplied_D_work =  list_supplied_D_work,
                                        perspective = perspective, 
+                                       bayesian= bayesian,
                                        R_diag = R_diag,
                                        HC_type = HC_type, # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
                                        cadjust = cadjust, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
@@ -231,4 +233,6 @@ SimStudy3_simulation_study <-
     ) )
     
   }
+
+
 
