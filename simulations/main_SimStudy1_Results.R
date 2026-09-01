@@ -146,7 +146,7 @@ pval_long$perspective <- recode(pval_long$perspective,
                                 "naive_pvals" = "Naive",
                                 "selfmade_marginal_pvals" = "Marginal (efficient)",
                                 "selfmade_marginal_not_efficient_pvals" = "Marginal (not efficient)",
-                                "selfmade_conditional_bayes_pvals" = "Conditional (Bayes)",
+                                "selfmade_conditional_bayes_pvals" = "Conditional (Bayesian)",
                                 "selfmade_conditional_not_bayes_pvals" = "Conditional (frequentist)"
 )
 
@@ -203,11 +203,11 @@ plot_SimStudy1 <- ggplot(data = pval_long_clean,
                          aes(sample = p_value,  
                              colour = perspective
                          )) +
-  theme_minimal(base_size = 18) +  # Basis-Schriftgröße
+  theme_minimal(base_size = 20) + 
   theme(
     strip.background = element_rect(fill = "lightgrey", color = NA),  
     strip.text = element_text(color = "black"),
-    legend.position = "bottom"       # <--- Hier Legende unten setzen
+    legend.position = "right"       
   ) +
   geom_abline(slope = 1, intercept = 0, linetype = "solid", color = "grey") + 
   geom_qq(  
@@ -223,7 +223,7 @@ print(plot_SimStudy1)
 
 ggsave("plot_SimStudy1.png", 
        plot = plot_SimStudy1, 
-       dpi = 900, width = 12.2, height = 10, units = "in")
+       dpi = 300, width = 15.5, height = 8, units = "in")
 
 
 #-------------------------------------------------------------------------------
@@ -339,7 +339,7 @@ plot_df <- plot_df %>% mutate(
 plot_df$perspective <- recode(plot_df$perspective,
                               "selfmade_marginal" = "Marginal (efficient)",
                               "selfmade_marginal_not_efficient" = "Marginal (not efficient)",
-                              "selfmade_conditional_bayes" = "Conditional (Bayes)",
+                              "selfmade_conditional_bayes" = "Conditional (Bayesian)",
                               "selfmade_conditional_not_bayes" = "Conditional (frequentist)"
 )
 
@@ -399,12 +399,12 @@ boxplot <-
     x = "",
     y = "Number of MC Resamplings due to convergence"
   ) +
-  theme_minimal(base_size = 18) +
+  theme_minimal(base_size = 20) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     strip.background = element_rect(fill = "lightgrey", color = NA),
-    strip.text = element_text(color = "black", size = 12),
-    legend.position = "bottom",
+    strip.text = element_text(color = "black", size = 16),
+    legend.position = "right",
     panel.spacing.y = unit(1.5, "lines"),
     panel.spacing.x = unit(1, "lines")
   ) +
@@ -420,4 +420,5 @@ print(boxplot)
 
 ggsave("boxplot_SimStudy1.png", 
        plot = boxplot, 
-       dpi = 900, width = 12.2, height = 10, units = "in")
+       dpi = 300, width = 15.5, height = 8, units = "in")
+
