@@ -3,7 +3,7 @@
 ################################################################################
 
 library(performance)
-library(clubSandwich)  # not really neccessary
+library(clubSandwich)  
 
 ####################### one_simulation function ################################
 
@@ -20,7 +20,7 @@ SimStudy3_one_simulation <- function(l2.id, # id variable for level-2 units
                                                 nrow = 3, byrow=T) , # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
                                      list_supplied_D_work,
                                      perspective, # marginal and/or conditional (for robust std. errors we only need marginal)
-                                     bayesian= c("bayesian"), # or "not_bayesian", "bayesian_corrected"
+                                     bayesian= c("bayesian"),
                                      robust_std.errors_marginal, # (which) robust std.err in marginal perspective
                                      R_diag =T,
                                      HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
@@ -377,13 +377,6 @@ SimStudy3_one_simulation <- function(l2.id, # id variable for level-2 units
               )
   
 }
-
-
-
-
-
-
-
 
 
 
