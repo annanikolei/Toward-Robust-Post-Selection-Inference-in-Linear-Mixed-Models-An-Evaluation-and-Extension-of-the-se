@@ -376,7 +376,3 @@ SimStudy2_one_simulation <- function(l2.id, # id variable for level-2 units
 
 
 
-
-
-
-
