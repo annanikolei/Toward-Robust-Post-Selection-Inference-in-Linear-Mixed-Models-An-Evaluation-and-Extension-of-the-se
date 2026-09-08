@@ -14,7 +14,7 @@ SimStudy2_simulation_study <-
   function(n_iter, #number of replications per condition
            n_obs = 40^2, # number of observations
            m = 40, # number of level-2 units
-           R_squared = 0.1, # pseudo coefficient of determination
+           R_squared, # pseudo coefficient of determination
            dgp_X_output,
            D = matrix(c(2,0.2,0.1,
                         0.2,1.5,0.2,
@@ -33,8 +33,7 @@ SimStudy2_simulation_study <-
            checkConvergence_for_check_Fun # T or F (should convergence checks for MC sampling be conducted)
            
   ){
-    
-    warning("Does list_supplied_D_work match simulation conditions?")
+  
     
     ## simulation conditions ---------------------------------------------------
     
