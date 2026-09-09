@@ -965,18 +965,39 @@ SimStudy3_Results <- SimStudy3_Results[SimStudy3_Results$perspective != "naive",
 SimStudy3_Results <- rbind(SimStudy3_Results, naive_expanded)
 
 # supplied is the same if HC3/CR2 estimator is used => duplicate this
-supplied_rows <- SimStudy3_Results[SimStudy3_Results$estimator == "supplied" & SimStudy3_Results$perspective=="marginal_not_efficient", ]
-supplied_expanded <- supplied_rows[rep(seq_len(nrow(supplied_rows)), each = length("marginal_not_efficient_HC3")), ]
-supplied_expanded$perspective <- rep("marginal_not_efficient_HC3", times = nrow(supplied_rows))
-supplied_expanded_CR2_noteff <- supplied_rows[rep(seq_len(nrow(supplied_rows)), each = length("marginal_not_efficient_CR2")), ]
-supplied_expanded_CR2_noteff$perspective <- rep("marginal_not_efficient_CR2", times = nrow(supplied_rows))
-supplied_rows_eff <- SimStudy3_Results[SimStudy3_Results$estimator == "supplied" & SimStudy3_Results$perspective=="marginal", ]
-supplied_expanded_CR2_eff <- supplied_rows[rep(seq_len(nrow(supplied_rows_eff)), each = length("marginal_CR2")), ]
-supplied_expanded_CR2_eff$perspective <- rep("marginal_CR2", times = nrow(supplied_rows_eff))
+# supplied results from marginal_not_efficient
+supplied_rows <- SimStudy3_Results[
+  SimStudy3_Results$estimator == "supplied" &
+    SimStudy3_Results$perspective == "marginal_not_efficient", 
+]
 
-SimStudy3_Results <- rbind(SimStudy3_Results, supplied_expanded, supplied_expanded_CR2_eff,supplied_expanded_CR2_noteff)
+# Copy as marginal_not_efficient_HC3
+supplied_expanded <- supplied_rows
+supplied_expanded$perspective <- "marginal_not_efficient_HC3"
+
+# Copy as marginal_not_efficient_CR2
+supplied_expanded_CR2_noteff <- supplied_rows
+supplied_expanded_CR2_noteff$perspective <- "marginal_not_efficient_CR2"
 
 
+# supplied results from marginal
+supplied_rows_eff <- SimStudy3_Results[
+  SimStudy3_Results$estimator == "supplied" &
+    SimStudy3_Results$perspective == "marginal", 
+]
+
+# Copy as marginal_CR2
+supplied_expanded_CR2_eff <- supplied_rows_eff
+supplied_expanded_CR2_eff$perspective <- "marginal_CR2"
+
+
+# Add all copies to dataset
+SimStudy3_Results <- rbind(
+  SimStudy3_Results,
+  supplied_expanded,
+  supplied_expanded_CR2_eff,
+  supplied_expanded_CR2_noteff
+)
 SimStudy3_Results$coefficient <-
   ifelse(SimStudy3_Results$coefficient == "X3",
          "L1-noise~x[3]",
@@ -1440,6 +1461,9 @@ plot_MCResampling_SimStudy3_Appendix
 ggsave("plot_MCResampling_SimStudy3_Appendix.png", 
        plot = plot_MCResampling_SimStudy3_Appendix, 
        dpi = 300, width =16, height = 6.5, units = "in")
+
+
+
 
 
 
