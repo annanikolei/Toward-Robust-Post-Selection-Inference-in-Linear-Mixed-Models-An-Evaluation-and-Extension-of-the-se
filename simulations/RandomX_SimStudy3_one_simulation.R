@@ -16,6 +16,7 @@ SimStudy3_one_simulation <- function(n_obs = n_obs, # number of observations
                                                 nrow = 3, byrow=T) , # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
                                      perspective, # marginal 
                                      robust_std.errors_marginal, # (which) robust std.err in marginal perspective
+                                     AdjMcCaffrey=TRUE,
                                      R_diag =T,
                                      HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
                                      cadjust = F, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
@@ -265,7 +266,7 @@ SimStudy3_one_simulation <- function(n_obs = n_obs, # number of observations
   
   if(R_diag == TRUE){marginal_not_efficient_COV_estimator = c("ModelEstimate",
                                                               "supplied")}
-  if(R_diag == FALSE){marginal_not_efficient_COV_estimator = c("ModelEstimate", 
+  else{marginal_not_efficient_COV_estimator = c("ModelEstimate", 
                                                               "ICM",
                                                               "supplied")}
   
@@ -282,7 +283,8 @@ SimStudy3_one_simulation <- function(n_obs = n_obs, # number of observations
             which_conditional = which_coeffs, 
             rho_H0 = 0, 
             perspective = perspective, 
-            robust_std.errors_marginal = FALSE,
+            robust_std.errors_marginal = robust_std.errors_marginal,
+            AdjMcCaffrey= AdjMcCaffrey,
             marginal_COV_estimator = c("ModelEstimate","supplied"), 
             conditional_COV_estimator = c("ModelEstimate","supplied"), 
             marginal_not_efficient_COV_estimator = marginal_not_efficient_COV_estimator, 

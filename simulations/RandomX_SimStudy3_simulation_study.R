@@ -20,6 +20,7 @@ SimStudy3_simulation_study <-
                         0.1,0.2,1.5),nrow=3, byrow=T), # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
            perspective, 
            robust_std.errors_marginal = F, # (which) robust std.err in marginal perspective
+           AdjMcCaffrey=TRUE,
            R_diag =T,
            HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
            cadjust = F, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
@@ -75,6 +76,7 @@ SimStudy3_simulation_study <-
                                        HC_type = HC_type, # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
                                        cadjust = cadjust, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
                                        robust_std.errors_marginal = robust_std.errors_marginal,
+                                       AdjMcCaffrey= AdjMcCaffrey,
                                        B_MCsamples = B_MCsamples,
                                        remove_singular_fits = remove_singular_fits,
                                        interesting_vars = interesting_vars,
