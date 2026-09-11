@@ -283,6 +283,8 @@ SimStudy4_one_simulation <- function(l2.id, # id variable for level-2 units
   else if( R_diag == FALSE){marginal_not_efficient_COV_estimator = c("ModelEstimate", 
                                                                      "ICM",
                                                                      "supplied")}
+  if(robust_std.errors_marginal!=FALSE){marginal_not_efficient_COV_estimator <- marginal_COV_estimator <- c("ModelEstimate")}
+  else if(robust_std.errors_marginal==FALSE){marginal_COV_estimator = c("ModelEstimate","supplied")}
   
   selfmade_output <-
     mocasin(mod = selected_model, 
@@ -292,13 +294,13 @@ SimStudy4_one_simulation <- function(l2.id, # id variable for level-2 units
             this_y = dat$y, 
             B_MCsamples = B_MCsamples, # number of MC-samples
             MC_distribution = MC_distribution,
-            bayesian = c("bayesian"),
+            bayesian = c("bayesian_corrected"),
             which_marginal = which_coeffs, 
             which_conditional = which_coeffs, 
             rho_H0 = 0, 
             perspective = perspective, 
             robust_std.errors_marginal = robust_std.errors_marginal,
-            marginal_COV_estimator = c("ModelEstimate","supplied"), 
+            marginal_COV_estimator = marginal_COV_estimator, 
             conditional_COV_estimator = c("ModelEstimate","VarY","supplied"), 
             marginal_not_efficient_COV_estimator = marginal_not_efficient_COV_estimator, 
             diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"),
