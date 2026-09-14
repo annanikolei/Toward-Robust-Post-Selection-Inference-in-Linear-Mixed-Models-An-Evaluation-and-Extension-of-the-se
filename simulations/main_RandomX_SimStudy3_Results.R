@@ -4,7 +4,8 @@ source("Project1_install_packages.R")
 ## Load selfmade implementation
 source("selfmade**.R")
 
-## Load Simulation Study 1 files
+## Load Simulation Study 3 files
+setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
 source("SimStudy3_helper.R")
 source("RandomX_SimStudy3_dgp.R")
 source("SimStudy3_SelectionProcess.R")
@@ -842,7 +843,7 @@ results_all_conditions_df$perspective <- factor(
     "Marginal\n(not eff)",
     "Marginal\n(eff) CR2",
     "Marginal\n(not eff) CR2",
-    "Marginal\n(not eff) CR2\nnormalAdjustment",
+    "Marginal\n(not eff) CR2\nStandard OLS",
     "Marginal\n(not eff) HC3",
     "fullCandidate"
   )
@@ -935,7 +936,7 @@ results_all_conditions_df_SimStudy3 <-
         "Marginal\n(not eff)",
         "Marginal\n(eff) CR2",
         "Marginal\n(not eff) CR2",
-        "Marginal\n(not eff) CR2\nnormalAdjustment",
+        "Marginal\n(not eff) CR2\nStandard OLS",
         "Marginal\n(not eff) HC3",
         "Conditional\n(corrected)"
       ),
@@ -992,7 +993,7 @@ plot_SimStudy3 <- ggplot(
     )
   ) +
   
-  theme_minimal(base_size = 18) +
+  theme_minimal(base_size = 20) +
   
   theme(
     strip.background = element_rect(
@@ -1002,14 +1003,14 @@ plot_SimStudy3 <- ggplot(
     
     strip.text = element_text(
       color = "black",
-      size = 19,
+      size = 24,
       lineheight = 0.8
     ),
     
-    legend.text = element_text(size = 19),
-    legend.title = element_text(size = 19),
-    axis.text = element_text(size = 17),
-    axis.title = element_text(size = 19)
+    legend.text = element_text(size = 24),
+    legend.title = element_text(size = 24),
+    axis.text = element_text(size = 19),
+    axis.title = element_text(size = 24)
   ) +
   
   labs(
@@ -1053,7 +1054,7 @@ ggsave(
   "plot_RandomX_SimStudy3_R2_both.png",
   plot = plot_SimStudy3,
   dpi = 300,
-  width = 20,
-  height = 18,
+  width = 21,
+  height = 21,
   units = "in"
 )
