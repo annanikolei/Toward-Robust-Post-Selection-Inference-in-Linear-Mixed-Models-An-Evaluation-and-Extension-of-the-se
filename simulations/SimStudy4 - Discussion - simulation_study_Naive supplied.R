@@ -24,6 +24,7 @@ SimStudy4_Naive_supplied_simulation_study <-
                         0.2,1.5,0.2,
                         0.1,0.2,1.5),
                       nrow = 3, byrow=T) , # 3x3 covariance matrix of random effects (u0,u3,u7) per level2 unit
+           perspective = c("marginal_not_efficient"),
            checkConvergence_for_check_Fun = TRUE,
            remove_singular_fits = F, #remove singular fit 
            alpha = 0.000001, # alpha for significance selection
@@ -59,6 +60,7 @@ SimStudy4_Naive_supplied_simulation_study <-
                                        X = X, 
                                        X.quadratic = X.quadratic, 
                                        Z = Z, 
+                                       perspective=perspective,
                                        R_squared = design$R_squared[i_design], 
                                        D = D, 
                                        alpha = alpha,
