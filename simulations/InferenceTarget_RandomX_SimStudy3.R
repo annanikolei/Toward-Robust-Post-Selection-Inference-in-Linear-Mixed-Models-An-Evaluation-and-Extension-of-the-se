@@ -1,15 +1,17 @@
 # ==============================================================================
 # Simulation Study 3 RandomX -- Monte Carlo estimation of the OLS and GLS inference
-# targets for the linear working model (X1,X2,X3,X4), based on the DGP of
+# targets for the linear working model (X1,X2,X3,X4), based on the DGM of
 # Simulation Study 3, but with X redrawn (iid per observation) in every
 # iteration and b redrawn independently as well.
 # ==================
 
-## Load selfmade implementation
-setwd("~/Documents/Forschung/Post-selection inference/Masterarbeit/selfmade package nachprogrammieren/GitHub_selective_inference")
-source("Hauptfunktion (analog zur mocasin Funktion).R")
+## Install and load all necessary packages
+source("Project1_install_packages.R")
 
-setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
+## Load selfmade implementation
+source("selfmade**.R")
+
+# Load SimStudy3-RandomX files
 source("SimStudy3_helper.R")
 source("RandomX_SimStudy3_dgp.R")
 source("SimStudy3_SelectionProcess.R")
