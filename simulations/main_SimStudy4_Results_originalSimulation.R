@@ -768,9 +768,10 @@ plot_SimStudy4 <- ggplot(
       lineheight = 0.9
     ),
     
+    title = element_text(size = 21), 
     legend.text = element_text(size = 21),
     legend.title = element_text(size = 21),
-    axis.text = element_text(size = 13)
+    axis.text = element_text(size = 16)
   ) +
   
   geom_qq(
@@ -831,8 +832,8 @@ ggsave(
   "plot_SimStudy4.png",
   plot = plot_SimStudy4,
   dpi = 300,
-  width = 16,
-  height = 8,
+  width = 18,
+  height = 7.5,
   units = "in"
 )
 
@@ -913,13 +914,13 @@ plot_MCResampling_SimStudy4 <-
   ) +
   
   facet_grid(
-    perspective ~ label_facet + coefficient,
+    coefficient  ~perspective,
     
     labeller = labeller(
       coefficient = label_parsed,
       label_facet = label_wrap_gen(width = 35)
     )
-  ) +
+  )  +
   
   labs(
     x = "",
@@ -927,7 +928,7 @@ plot_MCResampling_SimStudy4 <-
     color = "Estimator"
   ) +
   
-  theme_minimal(base_size = 18) +
+  theme_minimal(base_size = 20) +
   
   theme(
     axis.text.x = element_text(
@@ -942,7 +943,7 @@ plot_MCResampling_SimStudy4 <-
     
     strip.text = element_text(
       color = "black",
-      size = 14
+      size = 19
     ),
     
     legend.position = "right",
@@ -977,8 +978,9 @@ ggsave(
   "plot_MCResampling_SimStudy4.png",
   plot = plot_MCResampling_SimStudy4,
   dpi = 300,
-  width = 10,
-  height = 10,
+  width = 15,
+  height = 7,
   units = "in"
 )
+
 
