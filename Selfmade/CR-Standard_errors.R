@@ -1,5 +1,5 @@
 ################################################################################
-# CR-Standardfehler
+# CR standard errors
 ## copied from Huang; https://francish.net/post/robust-standard-errors/
 ################################################################################
 library(CR2)
@@ -14,15 +14,15 @@ CR_std.errors <- function(mod,
                           robust_std.errors_marginal
 ){
   
-  # Extahiere die Cluster-Variable
+  # Extract the cluster variable
   cluster <- getME(mod, "flist")
   
-  # Falls nur eine nesting-Variable verwendet wurde, können die robust std.err
-  # berechnet werden -----------------------------------------------------------
+  # If only one nesting variable was used, the robust std.err
+  # can be computed -----------------------------------------------------------
   
   if(length(cluster)>1){ 
-  stop("Berechnung von robust standard errors nicht möglich, da mehr als eine
-  cluster-Variable verwendet wurde.") 
+  stop("Cannot compute robust standard errors because more than one
+  cluster variable was used.") 
       }
   
   if(length(cluster)==1){
@@ -36,7 +36,7 @@ CR_std.errors <- function(mod,
     Xl <- Sigmal <- Rl <- list()
     cnames <- names(table(cluster))
     
-    ## to get Xc
+    ## to get Xc (per-cluster design matrix)
     Xlist <- function(x){
       sel <- which(cluster == x)
       Xl[[x]] <- X[sel,]
@@ -45,6 +45,7 @@ CR_std.errors <- function(mod,
     Xl <- lapply(cnames, Xlist)
     ## lists become numeric? just add the names back later...
     
+    # per-cluster inverse of the working covariance matrix Sigma
     Sigmalist <- function(x){
       sel <- which(cluster == x)
       Sigmal[[x]] <- solve(Sigma[sel, sel]) #can use chol2inv but using solve for transparency
@@ -59,6 +60,7 @@ CR_std.errors <- function(mod,
   ## CR0 std.err ---------------------------------------------------------------
     if(robust_std.errors_marginal == "CR0"){
       
+      # per-cluster contribution to the meat matrix: r' * Sigma_c^{-1} * X_c
       meat <- function(x){
         t(Rl[[x]]) %*% Sigmal[[x]] %*% Xl[[x]]  #compute part of the the meat matrix
       }
@@ -69,28 +71,30 @@ CR_std.errors <- function(mod,
       
       
       meat <- t(u) %*% u #the full meat
-      clvc.cr <- bread %*% meat %*% bread #variance covariance matrix
+      clvc.cr <- bread %*% meat %*% bread #variance covariance matrix (sandwich estimator)
       
     }
     
   ## CR2 std.err ---------------------------------------------------------------
     if(robust_std.errors_marginal == "CR2"){
       
+      # per-cluster bias-reduction adjustment matrix (CR2-type correction)
       tXs <- function(s) {
         sel <- which(cluster == s)
         Sigmac <- Sigma[sel, sel] #V matrix per cluster
-        Ijj <- diag(nrow(Xl[[s]])) #Identity matrix
+        Ijj <- diag(nrow(Xl[[s]])) #identity matrix
         Hjj <- Xl[[s]] %*% bread %*% t(Xl[[s]]) %*% Sigmal[[s]] 
-        IHjj <- Ijj - Hjj #identity less Hat matrix
+        IHjj <- Ijj - Hjj #identity minus hat matrix
         #MatSqrtInverse(Ijj - Hjj) #early adjustment / valid
         V3 <- chol(Sigmac) #based on MBB; #see footnote 5 in HWZ; upper triangle
         Bi <- V3 %*% IHjj %*% Sigmac %*% t(V3)
-        t(V3) %*% MatSqrtInverse(Bi) %*% V3 #need the CR2 package installed
+        t(V3) %*% MatSqrtInverse(Bi) %*% V3 #requires the CR2 package
       } 
       
       tX <- lapply(cnames, tXs) #these are the adjustment matrices
       names(tX) <- cnames
       
+      # per-cluster contribution to the meat matrix using the adjustment
       cc2 <- function(x){
         Rl[[x]] %*% tX[[x]] %*% Sigmal[[x]] %*% Xl[[x]] # r x Adj x Vinv x Xc
       }
@@ -123,12 +127,12 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
   
   robust_std.errors <- robust_std.errors_marginal
   
-  # Extract Cluster-Variable
+  # Extract cluster variable
   cluster <- getME(mod, "flist")
   
   if(length(cluster)!=1){ 
-    stop("Berechnung von robust standard errors nicht möglich, da mehr als eine
-  cluster-Variable verwendet wurde.") 
+    stop("Cannot compute robust standard errors because more than one
+  cluster variable was used.") 
   }
   
   cluster <- cluster[[1]]
@@ -140,7 +144,7 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
   
   cnames <- names(table(cluster))
   
-  ## to get Xc
+  ## to get Xc (per-cluster design matrix)
   Xl <- list()
   Xlist <- function(x){
     sel <- which(cluster == x)
@@ -155,6 +159,7 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
   ## CR0 std.err ---------------------------------------------------------------
   if(robust_std.errors == "CR0"){
     
+    # per-cluster contribution: e_c' * X_c
     cc0 <- function(x){
       t(Rl[[x]]) %*% Xl[[x]]   # ê_c' X_c  (row vector, p-dim)
     }
@@ -174,6 +179,8 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
    
     if(AdjMcCaffrey){ 
     
+    # per-cluster adjustment matrix following McCaffrey-type CR2 correction,
+    # using the working covariance Sigma instead of the identity matrix
     tXs <- function(s){
       sel <- which(cluster == s)
       Xc  <- Xl[[s]]
@@ -186,12 +193,13 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
       IHjj <- Ijj - Hjj                # I_c - H_c
       U3 <- chol(Sigmac)               # Cholesky root of V_c = Sigma_c; based on MBB, see footnote 5 in HWZ; upper triangle
       Bi <- U3 %*% IHjj %*% Sigmac %*% t(U3)
-      t(U3) %*% MatSqrtInverse(Bi) %*% U3   # need the CR2 package installed
+      t(U3) %*% MatSqrtInverse(Bi) %*% U3   # requires the CR2 package
     }
     
     tX <- lapply(cnames, tXs)
     names(tX) <- cnames
     
+    # per-cluster contribution to the meat matrix using the adjustment
     cc2 <- function(x){
       Rl[[x]] %*% tX[[x]] %*% Xl[[x]]  # ê_c' Adj_c X_c
     }
@@ -206,6 +214,7 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
     }
     else if(!AdjMcCaffrey){
 
+        # simpler CR2 adjustment assuming V_c = I_c (no working covariance used)
         tXs <- function(s){
           sel <- which(cluster == s)
           Xc  <- Xl[[s]]
@@ -247,12 +256,12 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
 #   
 #   robust_std.errors <- robust_std.errors_marginal
 #   
-#   # ExtractCluster-Variable
+#   # Extract cluster variable
 #   cluster <- getME(mod, "flist")
 #   
 #   if(length(cluster)!=1){ 
-#     stop("Berechnung von robust standard errors nicht möglich, da mehr als eine
-#   cluster-Variable verwendet wurde.") 
+#     stop("Cannot compute robust standard errors because more than one
+#   cluster variable was used.") 
 #   }
 #   
 #  
@@ -323,4 +332,3 @@ CR_std.errors_OLS <- function(AdjMcCaffrey=TRUE,
 #   
 #   return(clvc.cr)
 # }
-
