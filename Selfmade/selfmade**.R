@@ -1,120 +1,139 @@
 ################################################################################
-# Main function (mocasin-function)
+# Hauptfunktion (analog zur mocasin-Funktion)
 ################################################################################
 
-source("install.packages.R")
-source("helper_functions.R")
-source("CR-Standard_errors.R") # not important
-source("CovarianceMatrix-Function.R")
-source("parallel_selective-inference-Function.R") # or selective-inference-Function.R
-source("Testvector-Functions.R")
+source("Hilfsfunktionen.R")
+source("CR-Standardfehler.R")
+source("Kovarianzmatrizen-Funktion.R")
+source("parallel_selective-inference-Funktionen.R")
+source("Testvektor-Funktionen.R")
 
-mocasin <- function(mod, # fitted model (selected model fit)
-                    balanced = TRUE, # equal number of level-1 units per cluster?
-                    checkFun = NULL, # function to check agreement with the initial selection event
-                    checkConvergence_for_check_Fun = F, # if TRUE, convergence is checked within checkFun
-                    # if convergence fails, resampling is performed
-                    # in that case, checkFun_checkConv must also be provided
-                    checkFun_checkConv = NULL, # checkFun with additional convergence check
-                    # must return two outputs: (1) agreement with initial selection event
-                    # and (2) whether convergence is acceptable
-                    this_y, # vector of observed y values
-                    B_MCsamples = 1000, # number of Monte Carlo samples
-                    MC_distribution = NULL, # MC samples drawn either from
-                                            # proposal distribution ("proposal")
-                                            # or from N(0, kappa^2) ("centered")
+mocasin <- function(mod, # fit des selektierten Modell
+                    balanced = TRUE, #gleich viele Level-1 Einheiten pro CLuster
+                    checkFun = NULL, # Funktion zur Überprüfung der Übereinstimmung 
+                                     #  mit initialem selection event
+                    checkConvergence_for_check_Fun = F, # wenn TRUE wird convergence bei 
+                    # checkFun geprüft und Tbs resamplet, wenn convergence nicht gegeben
+                    # dann muss aber auch die checkFun_checkConv angegeben sein
+                    checkFun_checkConv = NULL, # checkFun mit zusätzlicher Prüfung der convergence.
+                    # Muss zwei Argumente ausgeben, einmal wie es um Übereinstimmung mit initialem selection
+                    # event aussieht und einmal, ob convergence okay ist
+                    this_y, # Vektor an vorliegenden y-Werten
+                    B_MCsamples = 1000, # Anzahl an MC-samples
+                    MC_distribution = NULL, # MC-samples aus 
+                                            # proposal distribution "proposal"
+                                            # oder aus N(0,kappa_square)
+                                            # also aus "centered"
                     bayesian = c("not_bayesian",
                                  "bayesian",
-                                 "bayesian_corrected"), # whether to use Bayesian covariance matrix
-                    which_marginal = NULL, # selection of fixed effects (marginal perspective)
-                    which_conditional = NULL, # selection of fixed + random effects (conditional perspective)
-                    rho_H0 = 0, # null hypothesis value for all tested coefficients
-                    perspective = c("marginal","conditional"), # inference perspective:
-                                                               # "conditional", "marginal" (efficient),
-                                                               # or "marginal_not_efficient", or all combined
-                    robust_std.errors_marginal = F, # whether to use robust standard errors
-                                                    # in marginal perspective
-                                                    # options: FALSE, "CR0", "CR2". Must be FALSE because it does not work
-
-                    
-                    R_diag = TRUE, # whether R = sigma^2 * I (homoskedastic + independent errors)
-                    
+                                 "bayesian_corrected"), # bayesianische KOV-Matrix
+                    which_marginal = NULL, # selinf für welche fixed effects
+                    which_conditional = NULL, # selinf für welche fixed + random
+                    rho_H0 = 0, # Nullhypothese für alle zu testenden Gewichte
+                    perspective = c("marginal","conditional"), # conditional,
+                                                               # marginal (efficient) oder "marginal_not_efficient" oder
+                                                               # alles zusammen
+                    robust_std.errors_marginal = F, # sollen bei marginaler Perspektive
+                                                    # robuste Standardfehler genutzt werden 
+                                                    # und wenn ja welche?
+                                                    # FALSE, "CR0", "CR2"
+                    AdjMcCaffrey=TRUE, #boolean,if CR2 robust standard errors in not-efficient: robustness with adjument matrix by McCaffrey et al. (2001)
                     marginal_COV_estimator = c("ModelEstimate", 
                                                "ICM",
-                                               "supplied"), # estimator for covariance matrix (marginal)
+                                               "supplied"), # welche Schätzer
+                                                            # für die KOV-Matrix
                     marginal_not_efficient_COV_estimator = c("ModelEstimate", 
                                                              "ICM",
-                                                             "supplied"), # covariance estimator for not-efficient marginal case
-                    
-                    diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"), 
-                    # if R_diag = FALSE, proposed covariance matrix extimator: should it replace full SIGMA or only R?
+                                                             "supplied"), # welche Schätzer
+                                                                          # für die KOV-Matrix
+                    diagF_not_efficient_SIGMA_or_R = c("SIGMA_replaced", "R_replaced"), # wenn Rdiag = F kann man mit ALM ResidualmutiplikationsKOVMatrix schätzen. Soll die SIGMA komplett ersetzen oder nur R?
                     
                     conditional_COV_estimator = c("ModelEstimate", 
                                                   "ICM",
                                                   "VarY",
-                                                  "supplied"), # estimator for covariance matrix (conditional)
-                    
-                    HC_type = "HC0", # heteroskedasticity-consistent type (HC0, HC1, HC2, HC3)
-                    cadjust = F, # cluster adjustment (TRUE/FALSE)
-                    
-                    symmetric_selection = T, # symmetric selection event?
-                    
-                    alpha = 0.05, # significance level
-                    allow_smaller_alpha = T, # allow computation of larger confidence intervals?
-                    
-                    multiple = 7, # controls sequence width in p-value/CI function
-                                  # used to generate candidate rho values for CI computation
-                    
-                    
+                                                  "supplied"), # welche Schätzer
+                                                            # für die KOV-Matrix
+                    HC_type = "HC0", # for marginal_diagF_not_efficient: (or "HC1","HC2","HC3")
+                    cadjust = F, # for marginal_diagF_not_efficient: logical. Should a cluster adjustment be applied?
+                    symmetric_selection = T, # symmetrisches selection event?
+                    alpha = 0.05, # welches Signifikanzniveau
+                    allow_smaller_alpha = T, # Berechnung von größeren KIs?
+                    multiple = 7, # reguliert Sequenzbreite in pval_CI-Funktion
+                                  # bei Erstellung möglicher rho-Werte zur KI-
+                                  # Berechnung
+                    R_diag = TRUE, # R = sigma^2 * IN (Homo + Unabhängig) oder nicht?                   #?# muss auf jeden Fall noch eingearbeitet werden, wenn nicht diagonal genutzt werden soll
                     Sigma_supplied = NULL,
                     Z_supplied = NULL,
                     G_supplied = NULL,
                     Lambda_supplied = NULL,
                     Lambdat_supplied = NULL,
-                    G_work_supplied = NULL, # supplied G for conditional perspective
+                    G_work_supplied = NULL, # conditional perspective supplied
                     sigma_square_epsilon_supplied = NULL,
                     R_supplied = NULL){
-
-#-----------------------------------------------------------------------------
-#### Extract important parameters from the fitted model `mod`
-#-----------------------------------------------------------------------------
-
-# Extract y vector if needed
-# if (is.null(this_y)) { this_y <- mod@resp }
-
-# Extract number of observations
-n <- length(this_y)
-
-# Extract number of clusters (level-2 units)
-number_of_cluster <- ngrps(mod)[[1]]
-
-# Extract working design matrices X_A (fixed effects) and Z_B (random effects)
-# Note: In the marginal perspective, no random effects are selected,
-# so Z_B_work typically coincides with Z_supplied.
-# However, we do NOT pass it as Z_supplied, in case we want to
-# simulate violations of this assumption later.
-X_A_work <- getME(mod, "X")
-Z_B_work <- getME(mod, "Z")
-
-# Extract the estimated working Cholesky factor Lambda from the model.
-# This is required for:
-# - all estimators in the conditional perspective
-# - the ModelEstimate in the marginal perspective
-# Therefore, we compute it unconditionally.
-#
-# Relationship:
-# G_est = sigma^2 * Lambda %*% t(Lambda)
-# See: https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf (Formula 4)
-Lambda_work_est  <- getME(mod, "Lambda")
-Lambdat_work_est <- getME(mod, "Lambdat") # = t(Lambda_work_est)
-
-# Compute estimated random effects covariance matrix G
-G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
-
   
-#-----------------------------------------------------------------------------
-#### Construct or estimate the (inverse) covariance matrices
-#-----------------------------------------------------------------------------
+
+  #-----------------------------------------------------------------------------
+#### Extrahieren von wichtigen Parametern aus geschätztem Modell mod
+  #-----------------------------------------------------------------------------
+  
+  
+  if(("supplied" %in% marginal_not_efficient_COV_estimator)& robust_std.errors_marginal!=FALSE){
+
+    warning("Wenn supplied, gehen wir davon aus, dass wir keine robusten Standardfehler brauchen. Supplied wird daher ausgeschlossen")
+
+    marginal_not_efficient_COV_estimator <- 
+      marginal_not_efficient_COV_estimator[marginal_not_efficient_COV_estimator != "supplied"]
+
+  }
+  
+  if(("supplied" %in% marginal_COV_estimator)& robust_std.errors_marginal!=FALSE){
+    
+    warning("Wenn supplied, gehen wir davon aus, dass wir keine robusten Standardfehler brauchen. Supplied wird daher ausgeschlossen")
+    
+    marginal_COV_estimator <- 
+      marginal_COV_estimator[marginal_COV_estimator != "supplied"]
+    
+  }
+  
+  if(AdjMcCaffrey==FALSE & length(marginal_not_efficient_COV_estimator)>1){
+    
+    warning("Sigma spielt hier keine relevante Rolle außer für genaue Definition von dirV. Daher setzen wir marginal_not_efficient_COV_estimator=ModelEstimate")
+    
+    marginal_not_efficient_COV_estimator <- c("ModelEstimate")
+  }
+  
+ # Extrahiere y-Vektor, wenn nötig
+ # if(is.null(this_y)){this_y <- mod@resp}
+  
+  # Extrahiere Anzahl an Beobachtungen
+ 
+  n <- length(this_y)
+  number_of_cluster = ngrps(mod)[[1]]
+  
+  # Extrahiere die working Matrizen X_A und Z_B aus dem Modell                           #?# hier bei den ganzen Sachen vllt. noch if else Abfragen, ob überhaupt ModelEstimate bzw. irgendwas wofür das gebraucht wird?
+  X_A_work <- getME(mod, "X")
+  Z_B_work <- getME(mod, "Z") # in der marginal perspective sollen ja eh
+                              # keine random effects ausgewählt werden, daher  
+                              # i.A. übereinstimmend mit Z_supplied aber 
+                              # wir geben das trotzdem nicht als Z_supplied an, 
+                              # falls wir in einer späteren Simulation 
+                              # mal eine solche Verletzung ausprobieren wollen.
+  
+  # Extrahiere die estimated working Cholesky-Zerlegungsmatrix Lambda aus Modell. 
+  # Wird gebraucht für alle Schätzer in conditional perspective und für ModelEst
+  # in marginal perspective, daher berechnen wir das einfach immer                      #?# oder besser if else Abfrage
+  # Dabei gilt: G_est = sigma_square_epsilon * Lambda %*% t(Lambda).
+  # https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf (Formel 4)
+  Lambda_work_est <- getME(mod, "Lambda")
+  Lambdat_work_est <- getME(mod, "Lambdat") # = t(Lambda_work_est)
+  G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est                 #?# gut, ich könnte sigma_square_epsilon_estimated hier natürlich auch schon mal definieren (ich habe in dem R_R_inv sonst ja auch nochmal dri)
+  
+
+  #-----------------------------------------------------------------------------
+#### Aufstellen der gegebenen oder Schätzung der (inversen) Kovarianzmatrizen
+  #-----------------------------------------------------------------------------
+  # Falls eine der beiden Perspektiven marginal oder conditional nicht angegeben
+  # ist, setze default-Wert der COV_estimator auf NULL
   
   if(!("marginal" %in% perspective)){
     marginal_COV_estimator <- NULL
@@ -130,6 +149,7 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
     conditional_COV_estimator <- NULL
   }
   
+  # Welche Schätzer müssen berechnet werden
   if(!is.null(marginal_COV_estimator)){
    marginal_COV_estimator <- match.arg(marginal_COV_estimator,
                                       c("ModelEstimate", 
@@ -162,10 +182,10 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
   
   
   
-## Calculation of R,R_invers for the different estimators --------------
+## Vorab: Berechnung von R,R_invers,für die verschiedenen Schätzer--------------
   
   fit_ICM <- NULL
-  Sigma_ICM <- NULL
+  # Sigma_ICM <- NULL
   
   if(R_diag == T){
     
@@ -187,36 +207,57 @@ G_work_est <- sigma(mod)^2 * Lambda_work_est %*% Lambdat_work_est
   
   else if(R_diag == F){
     
+    
   ## marginal or conditional perspective
-
-# Currently, working with non-diagonal R is only supported when using
-# a supplied covariance estimator in both marginal and conditional perspectives
-if (!any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator, conditional_COV_estimator))) {
-  
-  # Case: No supported estimator is used and R is not supplied
-  if (is.null(R_supplied) && any(c("marginal","conditional") %in% perspective)) { 
-    stop("R_diag = FALSE indicates that a non-diagonal level-1 residual covariance matrix should be used. 
-Currently, this is only possible if a non-diagonal level-1 residual covariance matrix is supplied 
-for the marginal and/or conditional perspective.")
-  }
-  
-  # Case: Conflicting estimators are specified together with non-diagonal R
-  else if (any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator, conditional_COV_estimator))) {
-    stop("R_diag = FALSE indicates that a non-diagonal level-1 residual covariance matrix should be used. 
-Currently, this is only supported for diagonal level-1 residual covariance matrices, or if a non-diagonal 
-matrix is explicitly supplied. This error also occurs if 'supplied' is combined with any other estimator.")
-  }  
+    # Arbeit mit nicht-diagonalem R momentan nur möglich für supplied COV_estimator bei marginal und conditional Perspektive
+    if(!any( c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator,conditional_COV_estimator) ) ){
+      if(is.null(R_supplied) && any(c("marginal","conditional") %in% perspective)){ 
+      stop("R_diag = FALSE zeigt an, dass nicht-diagonale 
+       Level-1-Residualkovarianzmatrix genutzt werden soll. Momentan aber nur 
+       möglich wenn nicht-diagonale Level-1-Residualkovarianzmatrix supplied wird
+       bei marginal und conditional Perspektive.")
+      }
+      
+      else if(any(c("ICM","ModelEstimate","VarY") %in% c(marginal_COV_estimator,conditional_COV_estimator))){
+        stop("R_diag = FALSE zeigt an, dass nicht-diagonale 
+       Level-1-Residualkovarianzmatrix genutzt werden soll. Momentan aber nur 
+       für diagonale Level-1-Residualkovarianzmatrizen möglich oder wenn nicht-diagonale 
+       Level-1-Residualkovarianzmatrix supplied wird. Fehlermeldung kommt auch dann, wenn neben
+       supplied irgendein anderer estimator angegeben wird.")
+      }
+    
       
   ## marginal not efficient perspective 
     if("marginal_not_efficient" %in% perspective){
       
-      # Elemente without "supplied"
+      if(robust_std.errors_marginal != FALSE){stop("robust estiamtor for marginal not efficient is either produced with R_diag=F or via robust standard errors")}
+      
+      # bei dem notefficient Ansatz können wir ja quasi die ALM-Formeln verwenden
+      # und für Sigma (im Gegensatz zum ALM) nun auch andere Matrizen als sigmaepsilon^2*I_N
+      # zulassen, indem man die Residuen aus dem ALM dazu nutzt.
+      # Es gibt nun aus meiner Sicht mehrere Möglichkeiten, was die estimator machen können. 
+      # Entweder wird das komplette Sigma durch diese Residuenmultiplikationsmatrix ersetzt.
+      # Oder man ersetzt nur das R addiert den ZGZ' Teil.
+      #
+      # Beim ModelEstimate kann man dann entweder die Residuenmultiplikationsmatrix als SIGMA
+      # nutzen oder als R und dann mit dem working model Teil ZGZ' addieren
+      #
+      # Wenn man beim ICM das R ersetzen wollte, dann bräuchte man aber noch das G aus dem minimalen 
+      # Modell. Aber das minimale Modell ist ja kein LMM sondern ein ALM y~1, deshalb müsste man
+      # dann entweder sagen, dass hier nur SIGMA ersetztw erden kann oder dann G aus dem generellen 
+      # working model mod übernehmen.
+      #
+      # Aber deshalb müssen wir für den Fall, dass R_diag==F angeben, ob wir R oder SIGMA
+      # durch die Residuenmultiplikationsmatrix ersetzen wollen.
+      
+      
+      # Elemente ohne "supplied"
       marginal_not_efficient_COV_estimator_no_supplied <- marginal_not_efficient_COV_estimator[!grepl("supplied", marginal_not_efficient_COV_estimator)]
       
-      # combinations for not supplied
+      # Kombinationen nur für nicht-supplied
       combos <- as.vector(outer(marginal_not_efficient_COV_estimator_no_supplied, diagF_not_efficient_SIGMA_or_R, paste, sep = "_"))
       
-      # add supplied 
+      # supplied einfach anhängen
       marginal_not_efficient_COV_estimator  <- c(combos, marginal_not_efficient_COV_estimator[grepl("supplied", marginal_not_efficient_COV_estimator)])
       
       
@@ -224,8 +265,8 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
            is.null(Sigma_supplied) && 
            "supplied" %in% marginal_not_efficient_COV_estimator){
         
-       stop("diagF_not_efficient_SIGMA_or_R indicates that R, Z, G, or Sigma is supplied, 
-             but the corresponding object (R_supplied, Z_supplied, G_supplied, or Sigma_supplied) is NULL.")
+        stop("in diagF_not_efficient_SIGMA_or_R ist angegeben, dass R,Z,G bzw. Sigma supplied wurde.
+             Aber R,Z,G_supplied bzw. Sigma_supplied ist NULL.")
       }
          
     }
@@ -276,7 +317,7 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   ### Marginal perspective (not efficient)
   if (c("marginal_not_efficient") %in%  perspective) {
     
-  if(!balanced){stop("Estimation of clustered errors assumes a balanced design.")}
+  if(!balanced){ stop("Schätzung der clustered errors geht von balanciertem Design aus.")}
     
   if(R_diag == T){
     SIGMA <- 
@@ -332,13 +373,13 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   
   
   #-----------------------------------------------------------------------------
-#### Testvector v  and vt, Variance of test statistic and dirV
+#### Testvektor v bzw. vt, Varianz der Teststatistik und dirV
   #-----------------------------------------------------------------------------
 
   
 ## marginal efficient 
   if(c("marginal") %in% perspective) {
-    # if which_marginal not specified, test all coefficients                  
+    # Falls which_marginal nicht spezifiziert ist, teste alle Koeffizienten                     #?# oder vielleicht 2:ncol wegen des Intercepts?
     if(is.null(which_marginal)){which_marginal <- 1:ncol(X_A_work)}
     
     testvec_marginal_list <- testvec_marginal(
@@ -354,11 +395,15 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
   
 ## marginal not efficient 
   if(c("marginal_not_efficient") %in% perspective) {
-     # if which_marginal not specified, test all coefficients    
+    # Falls which_marginal nicht spezifiziert ist, teste alle Koeffizienten                     #?# oder vielleicht 2:ncol wegen des Intercepts?
     if(is.null(which_marginal)){which_marginal <- 1:ncol(X_A_work)}
     
     testvec_marginal_not_efficient_list <- testvec_marginal_not_efficient(
+      AdjMcCaffrey=AdjMcCaffrey,
+      mod= mod,
+      this_y = this_y,
       marginal_not_efficient_COV_estimator = marginal_not_efficient_COV_estimator,
+      robust_std.errors_marginal =  robust_std.errors_marginal,
       which_marginal = which_marginal,
       X_A_work = X_A_work,
       SIGMA = SIGMA)
@@ -368,7 +413,7 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
 ## conditional 
   if(c("conditional") %in% perspective) {
     
-  #  # if which_conditional not specified, test all coefficients    
+  # Falls which_conditional nicht spezifiziert ist, teste alle Koeffizienten
     if(is.null(which_conditional)){
       which_conditional <- 1:ncol(K_inv.Ct.R_inv_C_block$C_block)}
     
@@ -384,29 +429,27 @@ matrix is explicitly supplied. This error also occurs if 'supplied' is combined 
     
   }
   
-
+  
 #-------------------------------------------------------------------------------
-#### Computation of selective inference outputs
+#### Berechnung der selective inference Outputs
 #-------------------------------------------------------------------------------
-
-# Separately for marginal / conditional perspective (COV_estimator, bayesian/not_bayesian, which)
-# Compute selective inference p-values and confidence intervals
-# using the selective_inference function 
-
-# Choice of MC distribution:
-# - For non-symmetric selection events: use the "centered" distribution
-# - For symmetric selection events: use the "proposal" distribution (default)
-if (is.null(MC_distribution)) {
-  if (symmetric_selection == TRUE) {
-    MC_distribution <- "proposal"
-  } else if (symmetric_selection == FALSE) {
-    MC_distribution <- "centered"
-  }
+  
+# einzeln für marginal/conditional (COV_estimator, bayesian/not_bayesian, which)
+# die Berechnung der selective-inference p-Werte und selective-inference-KIs
+# mithilfe der selective_inference-Funktion (einem der anderen Skripte)
+  
+# als MCdistribution sollte bei nicht-symmetrischem selection event die centered
+# distribution gewählt werden.
+# bei symmetrischem selection event die propsal
+# distribution, wenn nicht anders angegeben. 
+if(is.null(MC_distribution)){
+  if(symmetric_selection == T) {MC_distribution <- "proposal"}
+  else if(symmetric == F){MC_distribution <- "centered"}
 }
-
-# Create a list to store results for each perspective
-# The list will contain elements named "marginal" and/or "conditional"
-selinf_results_list <- setNames(vector("list", length(perspective)), perspective)
+  
+# Erstelle Liste mit Listenelementen bezüglich der perspective also mit einem
+# Listenelement $marginal und einem $conditional
+selinf_results_list <- setNames(vector("list",length(perspective)),perspective)
   
 ## marginal
 if("marginal" %in% perspective){
@@ -414,15 +457,15 @@ if("marginal" %in% perspective){
     lapply(marginal_COV_estimator, function(iestimator){
         lapply(which_marginal, function(iwhich){
           
-          # names of coefficients
+          # Namen der Koeffizienten
           coef_name <- paste("coefficient", iwhich)
           
-    ## Input for selective_inference          
-          # which vt:
+    ## Input für selective_inference          
+          # welcher Testvektor vt:
           vt = testvec_marginal_list$vt_marginal_list[[iestimator]][[coef_name]]
-          # which variance kappa_square
+          # welche Varianz kappa_square der Teststatistik
           kappa_square = testvec_marginal_list$kappa_square_marginal_list[[iestimator]][[coef_name]]
-          # which dirV
+          # welche dirV
           dirV = testvec_marginal_list$dirV_marginal_list[[iestimator]][[coef_name]]
           
           
@@ -458,15 +501,15 @@ if("marginal_not_efficient" %in% perspective){
     lapply(marginal_not_efficient_COV_estimator, function(iestimator){
       lapply(which_marginal, function(iwhich){
         
-        # names of coefficients
+        # Namen der Koeffizienten
         coef_name <- paste("coefficient", iwhich)
         
-        ## Input for selective_inference          
-        # which vt:
+        ## Input für selective_inference          
+        # welcher Testvektor vt:
         vt = testvec_marginal_not_efficient_list$vt_marginal_not_efficient_list[[iestimator]][[coef_name]]
-        # which variance kappa_square
+        # welche Varianz kappa_square der Teststatistik
         kappa_square = testvec_marginal_not_efficient_list$kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]]
-        # which dirV
+        # welche dirV
         dirV = testvec_marginal_not_efficient_list$dirV_marginal_not_efficient_list[[iestimator]][[coef_name]]
         
         
@@ -504,17 +547,17 @@ if("conditional" %in% perspective){
        lapply(bayesian, function(ibayesian){
         lapply(which_conditional, function(iwhich){
           
-           # names of coefficients
+           # Namen der Koeffizienten 
            coef_name <- paste("coefficient", iwhich)
           
-    ## Input for selective_inference
-           # which vt
+    ## Input für selective_inference
+           # welcher Testvektor
            vt = 
            testvec_conditional_list$vt_conditional_list[[iestimator]][[coef_name]]
-           # which variance kappa_square
+           # welche Varianz kappa_square der Teststatistik
            kappa_square = 
            testvec_conditional_list$kappa_square_conditional_list[[iestimator]][[ibayesian]][[coef_name]]
-           # which dirV
+           # welche dirV
            dirV = 
            testvec_conditional_list$dirV_conditional_list[[iestimator]][[ibayesian]][[coef_name]]
            
@@ -547,7 +590,7 @@ if("conditional" %in% perspective){
   
   
 #-------------------------------------------------------------------------------
-#### Return output
+#### Output ausgeben
 #-------------------------------------------------------------------------------
   
 return(selinf_results_list)
