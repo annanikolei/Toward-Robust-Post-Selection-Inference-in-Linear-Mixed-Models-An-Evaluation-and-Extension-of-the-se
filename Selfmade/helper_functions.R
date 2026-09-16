@@ -1,5 +1,5 @@
 ################################################################################
-# Hilfsfunktionen 
+# Helper functions
 ################################################################################
 
 # copied from cAIC4 package
@@ -37,24 +37,25 @@ cnms2formula <-
   }
 
 #-------------------------------------------------------------------------------
-## Effizientere Inversenberechnung ##
+## More efficient matrix inversion
 #-------------------------------------------------------------------------------
 
-# Woodbury Identität: berechnet Inverse von bestimmten Matrizen effizienter:
+# Woodbury identity: computes the inverse of certain matrices more efficiently:
 # (R+ZGZ')^{-1}=R^{-1}-R^{-1}Z(G^{-1}+Z'R^{-1}Z)^{-1}Z'R^{-1}
 # https://de.wikipedia.org/wiki/Woodbury-Matrix-Identit%C3%A4t
-# z.B. ist es effizienter, wenn R_invers sich leicht berechnen lässt (was der Fall
-# ist, wenn R diagonal) und G ne geringere Dimension hat als R. Das wäre alles
-# z.B. dann der Fall, wenn R=diag(sigma_square_epsilon) (n_obs x n_obs) und G die
-#  random effects Kovarianzmatrix wenn nur random intercept (m=nl2 x m=nl2).
+# For example, this is more efficient when R_inv can be computed easily
+# (as is the case when R is diagonal) and G has lower dimensionality than R.
+# This is the case, for example, when R = diag(sigma_square_epsilon)
+# (n_obs x n_obs) and G is the random effects covariance matrix when there is
+# only a random intercept (m = nl2 x m = nl2).
 
 woodbury_identity <- function(R_inv, Z, G) {
-  # Z-Matrix transponieren
+  # Transpose the Z matrix
   Zt <- t(Z)
-  # Matrixprodukte die mehrmals vorkommen, werden vorher berechnet (Effizienz)
+  # Compute matrix products that occur repeatedly in advance for efficiency
   R_inv.Z <- R_inv %*% Z  
   
-  # Berechnung der Inverse
+  # Compute the inverse
   Inverse <- R_inv -
     R_inv.Z %*% solve(
       solve(G) +
@@ -64,10 +65,10 @@ woodbury_identity <- function(R_inv, Z, G) {
 }
 
 #-------------------------------------------------------------------------------
-## ICM-estimator ##
+## ICM estimator
 #-------------------------------------------------------------------------------
 
-#Schätzt das (minMod) intercept model mit fixed random effects structure 
+# Estimates the (minMod) intercept model with a fixed random effects structure
 minMod <- function(mod)
 {
   
@@ -82,41 +83,42 @@ minMod <- function(mod)
   
 }
 
-# nur fürs marginale Modell interessant: 
-# Wir machen hier das, was die vcov_RI-Funktion aus dem selfmade package
-# aus meiner Sicht eigentlich beabsichtigt hat, nämlich die Schätzung von dem 
-# Sigma invers in dem Intercept-Modell mit der fixed random effects structure
-Sigma_invers_ICM <- function(model, # typischerweise das minMod(mod)-Modell 
+# Only relevant for the marginal perspective:
+# Here, we implement what the vcov_RI function from the selfmade package
+# appears to be intended to do, namely estimating Sigma^{-1} in the intercept
+# model with the fixed random effects structure
+Sigma_invers_ICM <- function(model, # typically the minMod(mod) model 
                              n = NROW(model@resp$y),
                              sigma_epsilon_ICM = NULL,
                              R_ICM = NULL,
                              R_ICM_invers = NULL,
-                             Z = getME(model,"Z") # per default mit Z_B, denn
-                             # wenn man ICM benutzt, 
-                             # sind random effects fest,
-                             # sollten also nicht
-                             # selektiert worden sein.
+                             Z = getME(model,"Z") # by default with Z_B, because
+                             # when using ICM,
+                             # the random effects are fixed,
+                             # and therefore should not
+                             # have been selected.
 ){
-  # Berechne Lambda_ICM und Lambdat_ICM
+  # Compute Lambda_ICM and Lambdat_ICM
   Lambda_ICM = getME(model,"Lambda")
   Lambdat_ICM = getME(model,"Lambdat")
   
-  # falls kein sigma_epsilon gegeben, berechne es
+  # If sigma_epsilon is not provided, compute it
   if(is.null(sigma_epsilon_ICM)){sigma_epsilon_ICM <- getME(model, "sigma")}
   
-  # zur Berechnung von R_ICM_invers
+  # Compute R_ICM_invers
   if(is.null(R_ICM_invers)){
     
     R_ICM_invers <- diag(1/sigma_epsilon_ICM^2, n)}     
   
-  # Berechnung R
+  # Compute R
   if(is.null(R_ICM)){
     R_ICM <- diag(sigma_epsilon_ICM^2, n)}
   
-  # Berechne inverse Sigma Matrix mit effizienterer Woodbury-Identität
-  # Berechnung von G wieder nach Formel (4) aus
+  # Compute the inverse of the Sigma matrix using the more efficient Woodbury
+  # identity
+  # Compute G according to Equation (4) in
   # https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf
-  # weil Lambda mit getMe-Befehl gewählt wurde 
+  # because Lambda was obtained using the getME function
   
   G = sigma_epsilon_ICM^2 * Lambda_ICM %*% Lambdat_ICM 
   
@@ -130,47 +132,48 @@ Sigma_invers_ICM <- function(model, # typischerweise das minMod(mod)-Modell
     
   })
   
-  return(Inverse_ICM)                                                              #?# ich hoffe, dass das so die Intention war bei dem ICM-estimator, also dass auch da Sigma_invers berechnet werden soll von dem minMod
+  return(Inverse_ICM)                                                            
   
 }
 
 
-Sigma_ICM <- function(model, # typischerweise das minMod(mod)-Modell 
+Sigma_ICM <- function(model, # typically the minMod(mod) model 
                              n = NROW(model@resp$y),
                              sigma_epsilon_ICM = NULL,
                              R_ICM = NULL,
                              R_ICM_invers = NULL,
-                             Z = getME(model,"Z") # per default mit Z_B, denn
-                             # wenn man ICM benutzt, 
-                             # sind random effects fest,
-                             # sollten also nicht
-                             # selektiert worden sein.
+                             Z = getME(model,"Z") # by default with Z_B, because
+                             # when using ICM,
+                             # the random effects are fixed,
+                             # and therefore should not
+                             # have been selected.
 ){
-  # Berechne Lambda_ICM und Lambdat_ICM
+  # Compute Lambda_ICM and Lambdat_ICM
   Lambda_ICM = getME(model,"Lambda")
   Lambdat_ICM = getME(model,"Lambdat")
   
-  # falls kein sigma_epsilon gegeben, berechne es
+  # If sigma_epsilon is not provided, compute it
   if(is.null(sigma_epsilon_ICM)){sigma_epsilon_ICM <- getME(model, "sigma")}
   
-  # Berechnung R
+  # Compute R
   if(is.null(R_ICM)) {R_ICM <- diag(sigma_epsilon_ICM^2, n)}
   
-  # Berechne inverse Sigma Matrix mit effizienterer Woodbury-Identität
-  # Berechnung von G wieder nach Formel (4) aus
+  # Compute the inverse of the Sigma matrix using the more efficient Woodbury
+  # identity
+  # Compute G according to Equation (4) in
   # https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf
-  # weil Lambda mit getMe-Befehl gewählt wurde 
+  # because Lambda was obtained using the getME function
   
   G = sigma_epsilon_ICM^2 * Lambda_ICM %*% Lambdat_ICM 
   
   SigmaMatrix_ICM <- Z %*% G %*% t(Z) + R_ICM
   
-  return(SigmaMatrix_ICM)                                                              #?# ich hoffe, dass das so die Intention war bei dem ICM-estimator, also dass auch da Sigma_invers berechnet werden soll von dem minMod
+  return(SigmaMatrix_ICM)                                                             
   
 }
 
 #-------------------------------------------------------------------------------
-## Berechnung von Ceta ##
+## Computation of Ceta
 #-------------------------------------------------------------------------------
 Ceta <- function(wbs,
                  wbs_geq_tobs,
@@ -188,7 +191,7 @@ Ceta <- function(wbs,
 
 
 #-------------------------------------------------------------------------------
-## Blockdiagonalmatrix der Residualvarianzen aus angegebenem Residualvektor erstellen
+## Construct block-diagonal matrix of residual variances from a given residual vector
 #-------------------------------------------------------------------------------
 
 make_clustered_errors_KOVbdiag <- function(balanced = T,
@@ -198,22 +201,22 @@ make_clustered_errors_KOVbdiag <- function(balanced = T,
                                             clustersize, 
                                             number_of_cluster){
   
-  if(!balanced){ stop("transform_residuals_to_KOVbdiag momentan nur für balancierte Designs.")}
+  if(!balanced){ stop("transform_residuals_to_KOVbdiag currently only supports balanced designs.")}
   
-  # number of observations
+  # Number of observations
   n_obs <- number_of_cluster * clustersize
   X <- getME(mod,"X")
   
 
-  # fit lm with fixed effects formula and extract residual vector
+  # Fit an lm model using the fixed-effects formula and extract the residual vector
   lm_mod  <- lm(formula(mod, fixed = TRUE), data = mod@frame)
   resid_lm_mod <- resid(lm_mod)
   
-  # number of predictors 
+  # Number of predictors
   p_no_intercept <- sum(names(coef(lm_mod)) != "(Intercept)")
   
   # 
-  # calculate residual crossproduct
+  # Calculate residual cross-product
   if(HC_type %in% c("HC0")){ ResidualCrossprod <- resid_lm_mod %*% t(resid_lm_mod) }
   if(HC_type %in% c("HC1")){ ResidualCrossprod <- (n_obs - 1)/(n_obs - p_no_intercept - 1) * resid_lm_mod %*% t(resid_lm_mod) }
    
@@ -221,15 +224,15 @@ make_clustered_errors_KOVbdiag <- function(balanced = T,
   if(HC_type %in% c("HC2","HC3")){ hat_Matrix <-  X %*% solve(t(X) %*% X) %*% t(X) }
   
   if(HC_type %in% c("HC2")){ 
-    # elementweise Matrixmultiplikation
+    # Element-wise matrix multiplication
     ResidualCrossprod <- 1/(1 - hat_Matrix) * resid_lm_mod %*% t(resid_lm_mod) }
   
   if(HC_type %in% c("HC3")){
-    # elementweise Matrixmultiplikation
+    # Element-wise matrix multiplication
     ResidualCrossprod <- 1/(1 - hat_Matrix)^2 * resid_lm_mod %*% t(resid_lm_mod) }
   
   
-  # Liste mit Submatrizen erzeugen
+  # Create a list of submatrices
   Res_blocks <- lapply(seq_len(number_of_cluster), function(icluster) {
       
     rows <- ((icluster - 1) * clustersize + 1):(icluster * clustersize)
@@ -238,7 +241,7 @@ make_clustered_errors_KOVbdiag <- function(balanced = T,
   })
   
   
-  # Blockdiagonalmatrix zusammensetzen
+  # Assemble the block-diagonal matrix
   ## "inverse" cluster adjustment that Bell & McCaffrey (2002) and hence also
   ## Cameron & Miller (2005, Eq. 25) recommend for HC3 (but not HC2)
   ## -> canceled out again if cadjust = TRUE
@@ -251,7 +254,6 @@ make_clustered_errors_KOVbdiag <- function(balanced = T,
   return(KOVbdiag)
   
 }
-
 
 
 
