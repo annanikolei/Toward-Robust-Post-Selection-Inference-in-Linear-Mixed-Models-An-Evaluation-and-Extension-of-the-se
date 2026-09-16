@@ -1,99 +1,106 @@
 ################################################################################
-# Covariance matrix estimation functions
+# Schätzung der Kovarianzmatrizen-Funktionen
 ################################################################################
 
 #-------------------------------------------------------------------------------
-# Function to compute R and R^{-1} for supplied, ModelEstimate, and ICM
+# Funktion zur Berechnung von R, R_invers für supplied, ModelEstimate und ICM
 #-------------------------------------------------------------------------------
-## Note: also used for the VarY estimator in the conditional perspective
+## Bemerkung: für den VarY-estimator bei der conditional perspective
 
-R_R_invers <- function(mod, # fitted model
-                       this_y = NULL, # vector of observed y values
-                       n, # length of this_y
+
+R_R_invers <- function(mod, # fit des selektierten Modell
+                       this_y = NULL, # Vektor an vorliegenden y-Werten
+                       n, # Länge von this_y
                        marginal_COV_estimator = c("ModelEstimate", 
                                                   "ICM",
-                                                  "supplied"), # covariance estimator
+                                                  "supplied"), # KOV-estimator
                        conditional_COV_estimator = c("ModelEstimate", 
                                                      "ICM",
                                                      "VarY",
-                                                     "supplied"), # covariance estimator
+                                                     "supplied"),# KOV-estimator
                        fit_ICM = NULL,
                        Sigma_supplied = NULL,
                        sigma_square_epsilon_supplied = NULL){
   
-  # Prepare list for return
+  # Liste für return vorbereiten
   COV_estimator <- unique(c(marginal_COV_estimator, conditional_COV_estimator))
   R_return_list <- R_inv_return_list <- setNames(vector("list",
                                                         length(COV_estimator)),
                                                  COV_estimator)
   
+  
+  
   ## SUPPLIED
-  # If "supplied" is used for marginal and Sigma_supplied is missing OR
-  # if "supplied" is used for conditional, compute R from supplied sigma^2
+  # Falls supplied bei marginal und kein Sigma_supplied angegeben ist oder
+  # falls supplied bei conditional, berechne aus dem supplied sigma-square_error
+  # das R_inv_supplied
   if((c("supplied") %in% marginal_COV_estimator && is.null(Sigma_supplied))|
      c("supplied") %in% conditional_COV_estimator){
     
     if(!is.null(sigma_square_epsilon_supplied)){
       
       R_supplied <- Matrix(diag(sigma_square_epsilon_supplied,n),sparse=T)
-      # store in list
+      # in Listen übergeben 
       R_return_list$supplied <- R_supplied
       
       R_supplied_invers <- Matrix(diag(1/sigma_square_epsilon_supplied,n),
-                                  sparse=T) # inverse diagonal matrix
-      # store in list
+                                  sparse=T) # Inverse Diagonalmatrix                             #?# Muss ich beim R_supplied_invers auch mit Rmpfr arbeiten?
+      # in Listen übergeben 
       R_inv_return_list$supplied <- R_supplied_invers
     } 
     else if(is.null(sigma_square_epsilon_supplied)){
-      stop("If COV_estimator = 'supplied', either Sigma_supplied (marginal) 
-            or sigma_square_epsilon_supplied (marginal, conditional) 
-            must be provided")
+      stop("Da COV_estimator = 'supplied' muss entweder Sigma_supplied(marginal) 
+            oder sigma_square_epsilon_supplied (marginal, conditional) 
+            angegeben sein")
     }
   }
   
   ## MODELESTIMATE
   if(c("ModelEstimate") %in% COV_estimator){
-    # Extract estimated sigma^2_epsilon (level-1 residual variance)
+    # Extrahiere estimated sigma_square_epsilon (Level-1-Residualvarianz)
     sigma_square_epsilon <- sigma(mod)^2
     
     R_est <- Matrix(diag(sigma_square_epsilon,n), sparse = T )
-    # store in list
+    # in Listen übergeben 
     R_return_list$ModelEstimate <- R_est
     
+    
     R_est_invers <- Matrix(diag((1/sigma_square_epsilon),n),
-                           sparse = T) # inverse diagonal matrix
-    # store in list
+                           sparse = T) # Inverse Diagonalmatrix                            #?# Rmpfr?
+    # in Listen übergeben 
     R_inv_return_list$ModelEstimate <- R_est_invers
   }
   
   ## ICM
-  # Estimate minimal intercept model for later ICM estimator computation
+  # Schätzung des minimalen Intercept Modells zur späteren Berechnung des
+  # ICM-Schätzers. Wir machen das aber bereits hier, damit es nicht bei marginal
+  # und conditional perspective, also ggf. zweimal geladen werden muss
   if(c("ICM") %in%  COV_estimator){
     sigma_square_epsilon_ICM <- getME(fit_ICM, "sigma")^2
     
     R_ICM <- Matrix(diag(sigma_square_epsilon_ICM,n), sparse = T)
-    # store in list
+    # in Listen übergeben 
     R_return_list$ICM<- R_ICM
     
     R_ICM_invers <- Matrix(diag((1/sigma_square_epsilon_ICM),n),
-                           sparse = T) # inverse diagonal matrix
-    # store in list
+                           sparse = T) # Inverse Diagonalmat                          #?# Rmpfr?
+    # in Listen übergeben 
     R_inv_return_list$ICM <- R_ICM_invers
   }
   
   ## VarY
-  ## only works for diagonal covariance matrix
+  ## geht nur bei diagonaler KOV-Matrix
   if(c("VarY") %in%  conditional_COV_estimator){
-    # plug-in estimator for sigma^2_epsilon (Tibshirani et al. 2018)
+    # plugin für sigma_square_epsilon by Tibshirani et al. 2018
     sigma_square_epsilon_VarY <- as.numeric(var(this_y)*(n-1)/n)
     
     R_VarY <- Matrix(diag(sigma_square_epsilon_VarY,n), sparse = T)
-    # store in list
+    # in Listen übergeben 
     R_return_list$VarY<- R_VarY
     
     R_VarY_invers <- Matrix(diag((1/sigma_square_epsilon_VarY),n),
-                            sparse = T) # inverse diagonal matrix
-    # store in list
+                            sparse = T) # Inverse Diagnlmtrx
+    # in Listen übergeben 
     R_inv_return_list$VarY <- R_VarY_invers
   }
   
@@ -101,43 +108,47 @@ R_R_invers <- function(mod, # fitted model
   R_R_inv_return_list$R <- R_return_list
   R_R_inv_return_list$R_inv <- R_inv_return_list
   return(R_R_inv_return_list)
+  
 }
 
 
 #-------------------------------------------------------------------------------
-# Function to compute R and R^{-1} for non-diagonal R
+# Funktion zur Berechnung von R, R_invers für nicht-diagonales R
 #-------------------------------------------------------------------------------
+
 
 R_R_invers_nondiagonal <- function(
     marginal_COV_estimator = c("ModelEstimate", 
                                "ICM",
-                               "supplied"), # covariance estimator
+                               "supplied"), # KOV-estimator
     conditional_COV_estimator = c("ModelEstimate", 
                                   "ICM",
                                   "VarY",
-                                  "supplied"),# covariance estimator
+                                  "supplied"),# KOV-estimator
     R_supplied){
   
-  # Prepare list for return
+  # Liste für return vorbereiten
   COV_estimator <- unique(c(marginal_COV_estimator, conditional_COV_estimator))
   R_return_list <- R_inv_return_list <- setNames(vector("list",
                                                         length(COV_estimator)),
                                                  COV_estimator)
   
+  
+  
   ## SUPPLIED
-  # If "supplied" is used (marginal or conditional),
-  # compute R and R^{-1} from the supplied matrix
+  # Falls supplied bei marginal oder
+  # falls supplied bei conditional, berechne aus dem supplied R und Rinvers
   if(c("supplied") %in% marginal_COV_estimator |
      c("supplied") %in% conditional_COV_estimator){
     
     R_supplied <- as.matrix(R_supplied)
     
-    # store in list
+    # in Listen übergeben 
     R_return_list$supplied <- R_supplied
     
     R_supplied_invers <- solve(R_supplied)
     
-    # store in list
+    # in Listen übergeben 
     R_inv_return_list$supplied <- R_supplied_invers
     
   }
@@ -150,12 +161,14 @@ R_R_invers_nondiagonal <- function(
   R_R_inv_return_list$R <- R_return_list
   R_R_inv_return_list$R_inv <- R_inv_return_list
   return(R_R_inv_return_list)
+  
 }
 
 
 #-------------------------------------------------------------------------------
-# Function to compute Sigma for non-diagonal R in the not efficient case
+# Funktion zur Berechnung von Sigma für nicht-diagonales R für not efficient
 #-------------------------------------------------------------------------------
+
 
 SIGMA_function_diagF <- function(
     mod,
@@ -172,32 +185,28 @@ SIGMA_function_diagF <- function(
     n,
     number_of_cluster){
   
-  # Prepare list for return
+  # Liste für return vorbereiten
   COV_estimator <- marginal_not_efficient_COV_estimator
   SIGMA_return_list <- setNames(vector("list", length(COV_estimator)),COV_estimator)
   
   ## SUPPLIED
   if("supplied" %in% marginal_not_efficient_COV_estimator){
     
-    if(!is.null(Sigma_supplied) && !is.null(R_supplied)){
-      stop("Either Sigma_supplied or R_supplied must be provided, not both.")
-    }
+    if(!is.null(Sigma_supplied) && !is.null(R_supplied)){stop("Entweder Sigma_supplied oder
+                                                              R_supplied angeben.")}
     
-    if(!is.null(Sigma_supplied)) {
-      SIGMA_return_list$supplied <- Sigma_supplied
-    }
+    if(!is.null(Sigma_supplied)) {SIGMA_return_list$supplied <- Sigma_supplied}
     
-    else {
-      SIGMA_return_list$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied)+ R_supplied
-    }
+    else {SIGMA_return_list$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied)+ R_supplied}
     
   }
+  
   
   ## MODELESTIMATE
   if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator |
      "ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator ){
     
-    # Estimate covariance matrix via clustered residuals
+    # Fixed Effects Modell schätzen
     KOVMatrix_ModelEstimate <- make_clustered_errors_KOVbdiag( balanced = balanced,
                                                                 mod = mod, 
                                                                 HC_type = HC_type, 
@@ -205,17 +214,15 @@ SIGMA_function_diagF <- function(
                                                                 clustersize = n/number_of_cluster,
                                                                 number_of_cluster = number_of_cluster )
     
-    if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator) {
-      SIGMA_return_list$ModelEstimate_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ModelEstimate
-    }
+    if("ModelEstimate_R_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ModelEstimate_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ModelEstimate
     
-    if("ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) {
-      SIGMA_return_list$ModelEstimate_SIGMA_replaced <- KOVMatrix_ModelEstimate
-    }
+    if("ModelEstimate_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ModelEstimate_SIGMA_replaced <- KOVMatrix_ModelEstimate
     
   }
   
+  
   ## ICM
+  
   if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator|
      "ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator){
     
@@ -226,22 +233,20 @@ SIGMA_function_diagF <- function(
                                                       clustersize = n/number_of_cluster,
                                                       number_of_cluster = number_of_cluster )
     
-    if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator) {
-      SIGMA_return_list$ICM_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ICM
-    }
+    if("ICM_R_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ICM_R_replaced <- Z_B_work %*% G_work_est %*% t(Z_B_work) + KOVMatrix_ICM
     
-    if("ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) {
-      SIGMA_return_list$ICM_SIGMA_replaced <- KOVMatrix_ICM
-    }
+    if("ICM_SIGMA_replaced" %in% marginal_not_efficient_COV_estimator) SIGMA_return_list$ICM_SIGMA_replaced <- KOVMatrix_ICM
     
   }
   
+  
   return(SIGMA_return_list)
+  
 }
 
 #-------------------------------------------------------------------------------
-# Function to compute Sigma for the marginal not efficient perspective when
-# R = sigma^2_epsilon * I_n (diagonal residual covariance matrix)
+# Funktion zur Berechnung von Sigma für die marginale not efficient Perspektive, wenn
+# R = sigma^2eps * In
 #-------------------------------------------------------------------------------
 
 SIGMA_function_diagT <- function( 
@@ -259,25 +264,25 @@ SIGMA_function_diagT <- function(
     R_ICM = NULL,
     n = NULL){ 
   
-  # Create empty list for SIGMA so that each element can store
-  # one covariance matrix estimator
+  # Leere Liste fürSIGMA erstellen, sodass jedes Listenelement einen
+  #  Kovarianzmatrix-Schätzer enthalten kann
   SIGMA <- setNames(vector("list", length(marginal_not_efficient_COV_estimator)),
                     marginal_not_efficient_COV_estimator)
   
   ## SUPPLIED
-  ## Case: marginal_not_efficient_COV_estimator == "supplied",
-  ## i.e., Sigma is provided
+  ## Falls marginal_not_efficient_COV_estimator == "supplied",d.h. falls Sigma angegeben ist
   if(c("supplied") %in% marginal_not_efficient_COV_estimator){
     
-    # If Sigma_supplied is provided, assign it directly
+    # Falls Sigma_supplied angegeben, schreibe es in SIGMA-Matrix
     if(!is.null(Sigma_supplied)){SIGMA$supplied <- Sigma_supplied}
     
-    # If Sigma_supplied is not provided but R, Z, Lambda/Lambdat
-    # or G_supplied are provided, compute Sigma and store it
+    # Falls Sigma_supplied nicht angegeben ist aber R,Z,Lambda,Lamdat_supplied
+    #  oder G_supplied,dann berechne Sigma_supplied und trage dies in
+    #  SIGMA ein
     else if (is.null(Sigma_supplied) && !is.null(Z_supplied)){
       
-      # If G_supplied is not provided but Lambda_supplied is,
-      # compute G from Lambda; otherwise use G_supplied
+      # Falls G_supplied nicht angegeben ist aber Lambda_supplied, berechne 
+      # damit die Schätzung von Sigma, ansonsten mit G_supplied
       if(!is.null(G_supplied)){G_supplied <- G_supplied}
       
       else if (is.null(G_supplied) && !is.null(Lambda_supplied)) {
@@ -285,39 +290,43 @@ SIGMA_function_diagT <- function(
         G_supplied <- Lambda_supplied %*% Lambdat_supplied}
       
       else if(is.null(G_supplied) && is.null(Lambda_supplied)){
-        stop("If marginal_not_efficient_COV_estimator = 'supplied', either 
-              Lambda_supplied or G_supplied must be provided for the marginal 
-              not efficient perspective")}
+        stop("Da marginal_not_efficient_COV_estimator = 'supplied' muss für marginale not efficient 
+              Perspektive entweder Lambda_supplied oder G_supplied angegeben sein")}
       
-      # Compute Sigma = Z G Z' + R
+      # Woodbury-Matrix-Identität zur effizienteren Berechnung der Inverse
       SIGMA$supplied <- Z_supplied %*% G_supplied %*% t(Z_supplied) + R_supplied
     }
     
-    # Otherwise: required inputs for 'supplied' are missing
-    else {stop("If marginal_not_efficient_COV_estimator = 'supplied', either 
-                Sigma_supplied or (G_supplied / Lambda_supplied) and Z_supplied 
-                must be provided")}
+    # Else: Da "supplied angegeben wurde, muss auch Sigma_supplied nichtNULL 
+    # sein oder zumindest muss dann Z_supplied und G_supplied (bzw.Lambda) und 
+    # R_supplied angegeben sein 
+    else {stop("Da Da marginal_not_efficient_COV_estimator  = 'supplied' muss für 
+                marginale not efficient Perspektive entweder Sigma_supplied oder
+                (G_supplied bzw.Lambda_supplied) und Z_supplied angegeben sein")}
   }
   
   ## MODELESTIMATE
-  ## Case: Sigma is estimated via plug-in estimator (model-based)
+  ## Falls marginal_not_efficient_COV_estimator == "ModelEstimate", d.h. falls Sigma durch 
+  ## den plug-in Schätzer Sigma_dach also ModelEstimate geschätzt werden soll
   if(c("ModelEstimate") %in% marginal_not_efficient_COV_estimator){
+    # Berechne den plug-in Schätzer für SIGMA 
     
-    # Compute plug-in estimator for Sigma
     SIGMA$ModelEstimate <- Z_B_work %*% G_work_est %*% t(Z_B_work) + R_est
     
   }
   
   ## ICM
-  ## Case: Sigma is estimated via conservative minMod (ICM estimator)
+  ## Falls marginal_not_efficient_COV_estimator == "ICM", d.h. falls Sigma durch 
+  ## den konservativen minMod Schätzer also ICM geschätzt werden soll
   if(c("ICM") %in% marginal_not_efficient_COV_estimator){
     
-    # Compute ICM estimator for Sigma
+    # Berechne den ICM Schätzer für SIGMA
     model <- fit_ICM
     SIGMA$ICM <- Sigma_ICM(model = model,
                            n = n,
                            R_ICM = R_ICM,
                            Z = Z_B_work)
+    
     
   }
   
@@ -326,8 +335,9 @@ SIGMA_function_diagT <- function(
 }
 
 #-------------------------------------------------------------------------------
-# Function to compute Sigma^{-1} for the marginal perspective
+# Funktion zur Berechnung von Sigma_invers für die marginale Perspektive
 #-------------------------------------------------------------------------------
+
 
 SIGMA_invers_function <- function(
     marginal_COV_estimator =  c("ModelEstimate", "ICM","supplied"),
@@ -348,25 +358,26 @@ SIGMA_invers_function <- function(
     n = NULL){ 
   
   
-  # Create empty list for SIGMA_invers so that each element can store
-  # one covariance matrix estimator
+  # Leere Liste für SIGMA_invers erstellen, sodass jedes Listenelement einen
+  #  Kovarianzmatrix-Schätzer enthalten kann
   SIGMA_invers <- setNames(vector("list", length(marginal_COV_estimator)),
                            marginal_COV_estimator)
   
   ## SUPPLIED
-  ## Case: marginal_COV_estimator == "supplied", i.e., Sigma is provided
+  ## Falls marginal_COV_estimator == "supplied",d.h. falls Sigma angegeben ist
   if(c("supplied") %in% marginal_COV_estimator){
     
-    # If Sigma_supplied is provided, compute and store its inverse
+    # Falls Sigma_supplied angegeben, schreibe Inverse in SIGMA_invers-Matrix
     if(!is.null(Sigma_supplied)){
       SIGMA_invers$supplied <- solve(Sigma_supplied)}
     
-    # If Sigma_supplied is not provided but R, Z, Lambda/Lambdat
-    # or G_supplied are provided, compute Sigma and its inverse
+    # Falls Sigma_supplied nicht angegeben ist aber R,Z,Lambda,Lamdat_supplied
+    #  oder G_supplied,dann berechne Sigma_supplied und trage diese Inverse in
+    #  SIGMA_invers ein
     else if (is.null(Sigma_supplied) && !is.null(Z_supplied)){
       
-      # If G_supplied is not provided but Lambda_supplied is,
-      # compute G from Lambda; otherwise use G_supplied
+      # Falls G_supplied nicht angegeben ist aber Lambda_supplied, berechne 
+      # damit die Schätzung von Sigma_invers, ansonsten mit G_supplied
       if(!is.null(G_supplied)){G_supplied <- G_supplied}
       
       else if (is.null(G_supplied) && !is.null(Lambda_supplied)) {
@@ -374,10 +385,11 @@ SIGMA_invers_function <- function(
         G_supplied <- Lambda_supplied %*% Lambdat_supplied}
       
       else if(is.null(G_supplied) && is.null(Lambda_supplied)){
-        stop("If marginal_COV_estimator = 'supplied', either Lambda_supplied 
-              or G_supplied must be provided for the marginal perspective")}
+        stop("Da marginal_COV_estimator = 'supplied' muss für marginale 
+                  Perspektive 
+                  entweder Lambda_supplied oder G_supplied angegeben sein")}
       
-      # Use Woodbury matrix identity for efficient inversion
+      # Woodbury-Matrix-Identität zur effizienteren Berechnung der Inverse
       SIGMA_invers$supplied <- tryCatch({
         woodbury_identity(R_inv = R_supplied_invers,
                           Z = Z_supplied,
@@ -389,16 +401,20 @@ SIGMA_invers_function <- function(
       
     }
     
-    # Otherwise: required inputs for 'supplied' are missing
-    else {stop("If marginal_COV_estimator = 'supplied', either 
-                  Sigma_supplied or (G_supplied / Lambda_supplied)
-                  and Z_supplied must be provided")}
+    # Else: Da "supplied angegeben wurde, muss auch Sigma_supplied nichtNULL 
+    # sein oder zumindest muss dann Z_supplied und G_supplied (bzw.Lambda) und 
+    # R_supplied angegeben sein 
+    else {stop("Da marginal_COV_estimator = 'supplied' muss für marginale 
+                  Perspektive 
+                  entweder Sigma_supplied oder (G_supplied bzw.Lambda_supplied)
+                  und Z_supplied angegeben sein")}
   }
   
   ## MODELESTIMATE
-  ## Case: Sigma is estimated via plug-in estimator (model-based)
+  ## Falls marginal_COV_estimator == "ModelEstimate", d.h. falls Sigma durch 
+  ## den plug-in Schätzer Sigma_dach also ModelEstimate geschätzt werden soll
   if(c("ModelEstimate") %in% marginal_COV_estimator){
-    # Compute plug-in estimator for SIGMA^{-1} using Woodbury identity
+    # Berechne den plug-in Schätzer für SIGMA_invers mit Woodbury-Matrix
     
     SIGMA_invers$ModelEstimate <- tryCatch({
       woodbury_identity(R_inv = R_est_invers,
@@ -411,10 +427,11 @@ SIGMA_invers_function <- function(
   }
   
   ## ICM
-  ## Case: Sigma is estimated via conservative minMod estimator (ICM)
+  ## Falls marginal_COV_estimator == "ICM", d.h. falls Sigma durch 
+  ## den konservativen minMod Schätzer also ICM geschätzt werden soll
   if(c("ICM") %in% marginal_COV_estimator){
     
-    # Compute ICM estimator for SIGMA^{-1}
+    # Berechne den ICM Schätzer für SIGMA_invers
     model <- fit_ICM
     SIGMA_invers$ICM <- Sigma_invers_ICM(model = model,
                                          n = n,
@@ -429,8 +446,10 @@ SIGMA_invers_function <- function(
 
 
 #-------------------------------------------------------------------------------
-# Function to compute K^{-1}, C'R^{-1}, and C'R^{-1}C for the conditional perspective
+# Funktion zur Berechnung von R_list,K_inv_list, Ct.R_inv_list, Ct.R_inv.C_list
+# für die konditionale Perspektive
 #-------------------------------------------------------------------------------
+
 
 K_inv.Ct.R_inv_list_function <- function(
     conditional_COV_estimator = c("ModelEstimate","ICM","VarY","supplied"),
@@ -444,92 +463,122 @@ K_inv.Ct.R_inv_list_function <- function(
     R_VarY_invers
 ){
   
-  # Initialize lists
+  
+  # Leere Liste für K_invers:=(t(C)%*%R_inv%*%C+Q)_inv erstellen, sodass jedes 
+  # Listenelement einen Schätzer für K_inv enthalten kann
   K_inv_list <- setNames(vector("list",length(conditional_COV_estimator)),
                          conditional_COV_estimator)
   
+  # Leere Liste für Ct.R_inv.C:=t(C)%*%R_inv%*%C  und Ct.R_inv:=t(C)%*%R_inv
+  # erstellen
   Ct.R_inv_list <- setNames(vector("list",length(conditional_COV_estimator)),
                             conditional_COV_estimator)
-  
   Ct.R_inv.C_list <- setNames(vector("list",length(conditional_COV_estimator)),
                               conditional_COV_estimator)
   
-  # Construct block matrix C = [X | Z]
+  # Berechne Blockmatrix C zur Berechnung von K_inv
   C_block <- cbind(X_A_work,Z_B_work)
   C <- C_block
   Ct <- t(C)
   
-  # Compute inverse of G_work_est and corresponding Q matrix
+  # Berechnung der Inverse von G_work_est, wenn dieses als Schätzer aus 
+  # mod übernommen wurde. Sowie Berechnung von Q_est
   if(any(c("ModelEstimate","ICM","VarY") %in% conditional_COV_estimator)){
     
+    # Berechnung der Inverse von G_work_est
     G_work_est_invers <- solve(G_work_est) 
     
+    # Berechnung von Q_est
     Q_est <- bdiag(matrix(0, ncol=ncol(X_A_work), nrow=ncol(X_A_work)),
                    G_work_est_invers)
   }
   
   ## SUPPLIED
+  # Falls conditional_COV_estimator == "supplied", nutze G_work_supplied
+  # [also
+  # die Kovarianzmatrix der random effects, die man erhalten würde, wenn man
+  # mit der Population das working model schätzen würde (also wenn das
+  # eigentlich ein Populationsmodell mit random slopes ist, aber man das nur
+  # mit random intercepts schätzt z.B)]
+  # und R_supplied_invers zur Berechnung von K_invers
   if(c("supplied") %in% conditional_COV_estimator){
     
     if(!is.null(G_work_supplied)){
-      
+      # Berechnung der Block-Matrix Q: zunächst Berechnung von G_work_invers,
+      # danach die Bildung der Blockdiagonalmatrix
       G_work_supplied_invers <- solve(G_work_supplied)
-      
       Q_supplied <- bdiag(matrix(0, ncol=ncol(X_A_work), nrow=ncol(X_A_work)),
                           G_work_supplied_invers)
       
+      # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
       Ct.R_inv_supplied <- Ct %*% R_supplied_invers
       Ct.R_inv_list$supplied <- Ct.R_inv_supplied
       
       Ct.R_inv.C_supplied <- Ct.R_inv_supplied %*% C
       Ct.R_inv.C_list$supplied <- Ct.R_inv.C_supplied
       
-      # Woodbury not applicable because Q is not invertible
+      # Berechnung des enstprechenden Eintrags von K_inv                                    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
       K_inv_list$supplied <- solve(Ct.R_inv.C_supplied + Q_supplied)
     }
     
-    else {
-      stop("If conditional_COV_estimator = 'supplied', G_work_supplied must be provided.")
-    }
+    
+    # Else: Da "supplied angegeben wurde, muss G_work_supplied
+    # angegeben sein.
+    else {stop("Da conditional_COV_estimator = 'supplied' muss
+                 G_work_supplied angegeben sein")}
+    
   }
   
   ## MODELESTIMATE
+  # Falls conditional_COV_estimator == "ModelEstimate", nutze Q_est
+  # und R_est_invers zur Berechnung von K_invers
   if(c("ModelEstimate") %in% conditional_COV_estimator){
     
+    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
     Ct.R_inv_ModelEstimate <- Ct %*% R_est_invers 
     Ct.R_inv_list$ModelEstimate <- Ct.R_inv_ModelEstimate
     
     Ct.R_inv.C_ModelEstimate <- Ct.R_inv_ModelEstimate %*% C
     Ct.R_inv.C_list$ModelEstimate <- Ct.R_inv.C_ModelEstimate
     
-    K_inv_list$ModelEstimate <- solve(Ct.R_inv.C_ModelEstimate + Q_est)
-  }
+    # Berechnung des enstprechenden Eintrags von K_inv
+    K_inv_list$ModelEstimate <- solve(Ct.R_inv.C_ModelEstimate + Q_est)}
   
   ## ICM
+  # Falls conditional_COV_estimator == "ICM", nutze Q_est
+  # und R_ICM_invers zur Berechnung von K_invers
+  # !!! das sollte aber nur verwendet werden, wenn keine random effects
+  # selektiert werden sollen
   if(c("ICM") %in% conditional_COV_estimator){
     
+    
+    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
     Ct.R_inv_ICM <- Ct %*% R_ICM_invers
     Ct.R_inv_list$ICM <- Ct.R_inv_ICM
     
     Ct.R_inv.C_ICM <- Ct.R_inv_ICM %*% C
     Ct.R_inv.C_list$ICM <- Ct.R_inv.C_ICM
     
-    K_inv_list$ICM <- solve(Ct.R_inv.C_ICM + Q_est)
-  }
+    # Berechnung des enstprechenden Eintrags von K_inv                                    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
+    K_inv_list$ICM <- solve(Ct.R_inv.C_ICM + Q_est)}
   
   ## VarY
+  # Falls conditional_COV_estimator == "ICM", nutze Q_est
+  # und R_ICM_invers zur Berechnung von K_invers
   if(c("VarY") %in% conditional_COV_estimator){
     
+    # Berechnung der Listeneinträge von Ct.R_inv_list und Ct.R_inv.C_list
+    #!# Woodbury-Identität geht nicht weil Q nicht invertierbar ist 
     Ct.R_inv_VarY <- Ct %*% R_VarY_invers
     Ct.R_inv_list$VarY <- Ct.R_inv_VarY
     
     Ct.R_inv.C_VarY <- Ct.R_inv_VarY %*% C
     Ct.R_inv.C_list$VarY <- Ct.R_inv.C_VarY
     
-    K_inv_list$VarY <- solve(Ct.R_inv.C_VarY + Q_est)
-  }
+    # Berechnung des enstprechenden Eintrags von K_inv
+    K_inv_list$VarY <- solve(Ct.R_inv.C_VarY + Q_est)}
   
-  # Return object
+  ## Rückgabeobjekte
   return_K_inv.Ct.R_inv_list <- setNames(vector("list",4),
                                          c("K_inv_list","Ct.R_inv_list","Ct.R_inv.C_list","C_block"))
   
@@ -537,6 +586,7 @@ K_inv.Ct.R_inv_list_function <- function(
   return_K_inv.Ct.R_inv_list$Ct.R_inv_list <- Ct.R_inv_list
   return_K_inv.Ct.R_inv_list$Ct.R_inv.C_list <- Ct.R_inv.C_list
   return_K_inv.Ct.R_inv_list$C_block <- C_block
+  
   
   return(return_K_inv.Ct.R_inv_list)
 }
