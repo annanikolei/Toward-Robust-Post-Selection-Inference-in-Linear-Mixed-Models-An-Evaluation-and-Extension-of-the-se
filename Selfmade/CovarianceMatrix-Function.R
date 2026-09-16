@@ -44,7 +44,7 @@ R_R_invers <- function(mod, # fit of the selected model
       R_return_list$supplied <- R_supplied
       
       R_supplied_invers <- Matrix(diag(1/sigma_square_epsilon_supplied,n),
-                                  sparse=T) # inverse diagonal matrix                             #?# Do I also need to use Rmpfr for R_supplied_invers?
+                                  sparse=T) # inverse diagonal matrix                             
       # store in the return list
       R_inv_return_list$supplied <- R_supplied_invers
     } 
@@ -66,7 +66,7 @@ R_R_invers <- function(mod, # fit of the selected model
     
     
     R_est_invers <- Matrix(diag((1/sigma_square_epsilon),n),
-                           sparse = T) # inverse diagonal matrix                            #?# Rmpfr?
+                           sparse = T) # inverse diagonal matrix                          
     # store in the return list
     R_inv_return_list$ModelEstimate <- R_est_invers
   }
@@ -84,7 +84,7 @@ R_R_invers <- function(mod, # fit of the selected model
     R_return_list$ICM<- R_ICM
     
     R_ICM_invers <- Matrix(diag((1/sigma_square_epsilon_ICM),n),
-                           sparse = T) # inverse diagonal matrix                          #?# Rmpfr?
+                           sparse = T) # inverse diagonal matrix                       
     # store in the return list
     R_inv_return_list$ICM <- R_ICM_invers
   }
@@ -487,7 +487,7 @@ K_inv.Ct.R_inv_list_function <- function(
   # from mod), as well as Q_est
   if(any(c("ModelEstimate","ICM","VarY") %in% conditional_COV_estimator)){
     
-    # Compute the inverse of G_work_est
+    # Compute the inverse of G_work_est (may be not possible if singular fit)
     G_work_est_invers <- solve(G_work_est) 
     
     # Compute Q_est
@@ -518,7 +518,7 @@ K_inv.Ct.R_inv_list_function <- function(
       Ct.R_inv.C_supplied <- Ct.R_inv_supplied %*% C
       Ct.R_inv.C_list$supplied <- Ct.R_inv.C_supplied
       
-      # Compute the corresponding entry of K_inv                                    #!# Woodbury identity doesn't work because Q is not invertible
+      # Compute the corresponding entry of K_inv                                   
       K_inv_list$supplied <- solve(Ct.R_inv.C_supplied + Q_supplied)
     }
     
@@ -559,7 +559,7 @@ K_inv.Ct.R_inv_list_function <- function(
     Ct.R_inv.C_ICM <- Ct.R_inv_ICM %*% C
     Ct.R_inv.C_list$ICM <- Ct.R_inv.C_ICM
     
-    # Compute the corresponding entry of K_inv                                    #!# Woodbury identity doesn't work because Q is not invertible
+    # Compute the corresponding entry of K_inv                                  
     K_inv_list$ICM <- solve(Ct.R_inv.C_ICM + Q_est)}
   
   ## VarY
