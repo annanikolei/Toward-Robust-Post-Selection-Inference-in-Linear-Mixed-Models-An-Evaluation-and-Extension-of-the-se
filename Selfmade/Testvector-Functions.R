@@ -1,10 +1,10 @@
 ################################################################################
-# Test vector functions
+# Testvektor-Funktionen 
 ################################################################################
 
 
 #-------------------------------------------------------------------------------
-# Marginal test vector function
+# marginale Testvektor-Funktion
 #-------------------------------------------------------------------------------
 
 testvec_marginal <- function(
@@ -18,16 +18,18 @@ testvec_marginal <- function(
     splitRatio = 1
 ){
   
-  # Create lists to compute parameters for each marginal_COV_estimator
+  # Erstelle Listen, um pro marginal_COV_estimator die Parameter berechnen zu 
+  # können
   
   vt_marginal_list <- kappa_square_marginal_list <- dirV_marginal_list <-
     setNames(vector("list",length(marginal_COV_estimator)),
              marginal_COV_estimator) 
   
-  # Since multiple coefficients can be specified in which_marginal,
-  # create sublists so each corresponds to one coefficient
+  # Da es möglich ist, dass in which mehr als ein Koeffizient angegeben wird
+  # erstellen wir noch Unterlisten in den Listen, sodass sich jede auf einen
+  # Koeffizienten bezieht
   
-  # Create sublists
+  # Erstelle Unterlisten
   for(iestimator in marginal_COV_estimator) { 
     vt_marginal_list[[iestimator]] <- 
       kappa_square_marginal_list[[iestimator]] <- 
@@ -37,30 +39,29 @@ testvec_marginal <- function(
   }
   
   
-  ## Test vector vt and variance kappa_square
-  # Note: we compute only the efficient test statistic
-  # vt_eff := e_j' * (X_A' * Sigma_inv * X_A)^{-1}' * X_A' * Sigma_inv'
+  ## Testvektor vt und Varianz kappa_square
+  # Bemerkung: Wir berechnen nur die efficient Teststatistik
+  # vt_eff:= e_j'*(X_A'*Sigma_inv*X_A)_inv' * X_A' * Sigma_inv'
   X_A_workt <- t(X_A_work)
   
   for(iestimator in marginal_COV_estimator) {
-    # The matrix (X_A' * Sigma_inv * X_A)^{-1} is used for both
-    # the test vector definition and the variance
+    # das Matrixprodukt (X_A'*Sigma_inv*X_A)_inv kann man sowohl für
+    # die Testvektordefinition als auch für die Varianz gebrauchen
     X_At.Sigma_inv.X_A_inv <- solve( 
       X_A_workt %*% 
         SIGMA_invers[[iestimator]] %*%
         X_A_work)
-    
     X_A.X_At.Sigma_inv.X_A_inv <- X_A_work %*% X_At.Sigma_inv.X_A_inv 
     
-    # For all coefficients in which_marginal:
-    # Compute test vector vt
+    # für alle Koeffizienten in which_marginal gemeinsam:
+    # Testvektor vt bestimmen 
     vt_marginal_all_coeffs <- t(X_At.Sigma_inv.X_A_inv) %*%
       X_A_workt %*% t(SIGMA_invers[[iestimator]])
     
-    # Robust covariance matrix for all coefficients
+    # robust covariance matrix for all coefficients
     if(length(robust_std.errors_marginal) != 1){ 
-      stop("robust_std.errors_marginal must contain only one of the following:
-           FALSE, 'CR0' or 'CR2'.")}
+      stop("robust_std.errors_marginal darf nur eines der folgenden
+           Elemente enthalten: FALSE, 'CR0' oder 'CR2'.")}
     
     if(robust_std.errors_marginal != FALSE){
       
@@ -68,32 +69,31 @@ testvec_marginal <- function(
         CR_std.errors(mod = mod,
                       this_y = this_y,
                       X = X_A_work,
-                      Sigma = solve(SIGMA_invers[[iestimator]]), 
+                      Sigma = solve(SIGMA_invers[[iestimator]]),                                                #?# ja das könnte man noch effizienter machen
                       bread = X_At.Sigma_inv.X_A_inv,
                       vt_marginal_all_coeffs = vt_marginal_all_coeffs,
                       robust_std.errors_marginal = robust_std.errors_marginal)
       
     }
     
-    # Assign entries per coefficient into the corresponding list element
+    # Eintrag pro Koeffizient in das entsprechende Listenelement
     for (iwhich in which_marginal){
-      # Name of the coefficient for storing in the list
+      # Name des Koeffizienten zur Eintragung in Liste
       coef_name <- paste("coefficient", iwhich)
       
-      # Test vectors vt
+      # Testvektoren vt
       vt_marginal_list[[iestimator]][[coef_name]] <- 
         splitRatio * matrix(vt_marginal_all_coeffs[iwhich,],nrow = 1)
       
-      # Variance kappa_square
-      # not robust: k^2 := e_j' (X_A' * Sigma_inv * X_A)^{-1} e_j
+      # Varianz kappa_square
+      # not robust: k^2:= e_j'(X_A'*Sigma_inv*X_A)_inv e_j
       if(robust_std.errors_marginal == FALSE){
         
         kappa_square_marginal_list[[iestimator]][[coef_name]] <- 
           splitRatio^2 *X_At.Sigma_inv.X_A_inv[iwhich,iwhich] 
         
       }
-      
-      # robust
+      #robust
       if(robust_std.errors_marginal != FALSE){
         
         kappa_square_marginal_list[[iestimator]][[coef_name]] <- 
@@ -101,19 +101,18 @@ testvec_marginal <- function(
         
       }
       
-      # dirV := Sigma * v_eff / (v_eff' * Sigma * v_eff) (Rügamer 3.1.2)
-      #      = Sigma * v_eff / kappa_square_marginal 
-      #      = (X_A * X_At.Sigma_inv.X_A_inv * e_j) / kappa_square_marginal
+      # dirV:= Sigma * v_eff/(v_eff' * Sigma * v_eff) (Rügamer 3.1.2)
+      #      = Sigma * v_eff/kappa_square_marginal 
+      #      = (X_A * X_At.Sigma_inv.X_A_inv * e_j) /kappa_square_marginal
       dirV_marginal_list[[iestimator]][[coef_name]] <- 
         splitRatio * matrix(X_A.X_At.Sigma_inv.X_A_inv[,iwhich]/
-                 kappa_square_marginal_list[[iestimator]][[coef_name]], ncol = 1)
+                 (splitRatio^2 *X_At.Sigma_inv.X_A_inv[iwhich,iwhich]), ncol = 1)
     }
   }
   
   result_list <- setNames(vector("list",3),c("vt_marginal_list",
                                              "kappa_square_marginal_list",
                                              "dirV_marginal_list"))
-  
   result_list$vt_marginal_list <- vt_marginal_list
   result_list$kappa_square_marginal_list <- kappa_square_marginal_list
   result_list$dirV_marginal_list <- dirV_marginal_list
@@ -123,27 +122,32 @@ testvec_marginal <- function(
 }
 
 #-------------------------------------------------------------------------------
-# Marginal not efficient test vector function
+# marginale not efficient Testvektor-Funktion
 #-------------------------------------------------------------------------------
 
 testvec_marginal_not_efficient <- function(
-    robust_std.errors_marginal = F,
+    AdjMcCaffrey=TRUE,
+    mod = NULL,
+    this_y = NULL,
+    robust_std.errors_marginal,
     marginal_not_efficient_COV_estimator,
     which_marginal,
     X_A_work,
     SIGMA,
     splitRatio = 1 ){
   
-  # Create lists to compute parameters for each marginal_not_efficient_COV_estimator
+  # Erstelle Listen, um pro marginal_not_efficient_COV_estimator die Parameter berechnen zu 
+  # können
   
   vt_marginal_not_efficient_list <- kappa_square_marginal_not_efficient_list <- dirV_marginal_not_efficient_list <-
     setNames(vector("list",length(marginal_not_efficient_COV_estimator)),
              marginal_not_efficient_COV_estimator) 
   
-  # Since multiple coefficients can be specified in which_marginal,
-  # create sublists so each corresponds to one coefficient
+  # Da es möglich ist, dass in which mehr als ein Koeffizient angegeben wird
+  # erstellen wir noch Unterlisten in den Listen, sodass sich jede auf einen
+  # Koeffizienten bezieht
   
-  # Create sublists
+  # Erstelle Unterlisten
   for(iestimator in marginal_not_efficient_COV_estimator) { 
     vt_marginal_not_efficient_list[[iestimator]] <- 
       kappa_square_marginal_not_efficient_list[[iestimator]] <- 
@@ -153,49 +157,72 @@ testvec_marginal_not_efficient <- function(
   }
   
   
-  ## Test vector vt and variance kappa_square
-  # Note: we compute the not efficient test statistic
-  # vt := e_j' * (X_A' * X_A)^{-1}' * X_A'
+  ## Testvektor vt und Varianz kappa_square
+  # Bemerkung: Wir berechnen  die not efficient Teststatistik
+  # vt:= e_j'*(X_A'*X_A)_inv' * X_A' 
   X_A_workt <- t(X_A_work)
   X_At.X_A_inv <- solve(X_A_workt %*% X_A_work)
   
-  # For all coefficients in which_marginal:
-  # Compute test vector vt
-  vt_marginal_not_efficient_all_coeffs <- t(X_At.X_A_inv) %*% X_A_workt
+  # für alle Koeffizienten in which_marginal gemeinsam:
+  # Testvektor vt bestimmen 
+  vt_marginal_not_efficient_all_coeffs <- t(X_At.X_A_inv) %*% X_A_workt            #!# das t() könnte man weglassen
   
   for(iestimator in marginal_not_efficient_COV_estimator) {
-    # Compute variance matrix
+    # das Matrixprodukt (X_A'*Sigma_inv*X_A)_inv kann man sowohl für
+    # die Testvektordefinition als auch für die Varianz gebrauchen
     X_At.Sigma.X_A <- X_A_workt %*% SIGMA[[iestimator]] %*% X_A_work
-    kappasquare_marginal_not_efficient_all_coeffs <- 
-      X_At.X_A_inv %*% X_At.Sigma.X_A %*% X_At.X_A_inv
+    kappasquare_marginal_not_efficient_all_coeffs <- X_At.X_A_inv %*% X_At.Sigma.X_A %*% X_At.X_A_inv
     
-    # Robust covariance matrix (not supported here)
+    # robust covariance matrix for all coefficients
     if(length(robust_std.errors_marginal) != 1){ 
-      stop("robust_std.errors_marginal not allowed for marginal_not_efficient.")}
+      stop("robust_std.errors_marginal darf nur eines der folgenden
+           Elemente enthalten: FALSE, 'CR0' oder 'CR2'.")}
     
     if(robust_std.errors_marginal != FALSE){
-      warning("robust_std.errors_marginal not allowed for marginal_not_efficient. 
-               Standard errors are reported without robustness correction.")}
+      
+      CR_kappa_square_all_coeffs <-
+        CR_std.errors_OLS(AdjMcCaffrey=AdjMcCaffrey,
+                          mod = mod,
+                          this_y = this_y,
+                          X = X_A_work,
+                          Sigma = SIGMA[[iestimator]],
+                          bread =   X_At.X_A_inv,
+                          vt_marginal_all_coeffs = vt_marginal_not_efficient_all_coeffs,
+                          robust_std.errors_marginal = robust_std.errors_marginal)
+      
+    }
     
-    
-    # Assign entries per coefficient into the corresponding list element
+    # Eintrag pro Koeffizient in das entsprechende Listenelement
     for (iwhich in which_marginal){
-      # Name of the coefficient
+      # Name des Koeffizienten zur Eintragung in Liste
       coef_name <- paste("coefficient", iwhich)
       
-      # Test vectors vt
+      # Testvektoren vt
       vt_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
         splitRatio * matrix(vt_marginal_not_efficient_all_coeffs[iwhich,],nrow = 1)
       
-      # Variance kappa_square
-      # not efficient case
-      kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
-        splitRatio^2 *kappasquare_marginal_not_efficient_all_coeffs[iwhich,iwhich] 
+      # Varianz kappa_square
+      # not robust:
+      if(robust_std.errors_marginal == FALSE){
+        
+        kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
+          splitRatio^2 *kappasquare_marginal_not_efficient_all_coeffs[iwhich,iwhich] 
+        
+      }
+      #robust
+      if(robust_std.errors_marginal != FALSE){
+        
+        kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
+          splitRatio^2 * CR_kappa_square_all_coeffs[iwhich,iwhich] 
+        
+      }
       
-      # dirV := Sigma * v / kappa_square_marginal 
+      
+      # dirV:= Sigma * v/kappa_square_marginal 
+      
       dirV_marginal_not_efficient_list[[iestimator]][[coef_name]] <- 
         SIGMA[[iestimator]]%*%t(vt_marginal_not_efficient_list[[iestimator]][[coef_name]])/
-        kappa_square_marginal_not_efficient_list[[iestimator]][[coef_name]]
+        (splitRatio^2 *kappasquare_marginal_not_efficient_all_coeffs[iwhich,iwhich])
       
     }
   }
@@ -203,7 +230,6 @@ testvec_marginal_not_efficient <- function(
   result_list <- setNames(vector("list",3),c("vt_marginal_not_efficient_list",
                                              "kappa_square_marginal_not_efficient_list",
                                              "dirV_marginal_not_efficient_list"))
-  
   result_list$vt_marginal_not_efficient_list <- vt_marginal_not_efficient_list
   result_list$kappa_square_marginal_not_efficient_list <- kappa_square_marginal_not_efficient_list
   result_list$dirV_marginal_not_efficient_list <- dirV_marginal_not_efficient_list
@@ -213,8 +239,9 @@ testvec_marginal_not_efficient <- function(
 }
 
 #-------------------------------------------------------------------------------
-# Conditional test vector function
+# konditionale Testvektor-Funktion
 #-------------------------------------------------------------------------------
+
 
 testvec_conditional <- function(
     conditional_COV_estimator,
@@ -228,23 +255,25 @@ testvec_conditional <- function(
     splitRatio = 1
     
 ){
-  # Create lists to compute parameters for each conditional_COV_estimator  
+  # Erstelle Listen, um pro conditional_COV_estimator die Parameter berechnen  
+  # zu können
   vt_conditional_list <- kappa_square_conditional_list <- 
     dirV_conditional_list <-
     setNames(vector("list",length(conditional_COV_estimator)),
              conditional_COV_estimator) 
   
-  # Create sublists for kappa_square (variance) that distinguish
-  # between bayesian and not_bayesian
+  # Erstelle für die Varianz kappa_square eine Unterliste, die nach bayesian
+  # und not_bayesian unterscheidet
   for(iestimator in conditional_COV_estimator) { 
     kappa_square_conditional_list[[iestimator]] <- 
-      dirV_conditional_list[[iestimator]] <-                                        
+      dirV_conditional_list[[iestimator]] <-                                        #?# hier bin ich unser bei dem dirV im paper unterscheiden die nicht nach bayesian dafür aber im package schon, deswegen unterscheide ich jetzt auch mal
       setNames(vector("list",length(bayesian)),paste(bayesian))
   }
   
-  # Since multiple coefficients can be specified in which_conditional,
-  # create further sublists so each corresponds to one coefficient
-  # Create sublists
+  # Da es möglich ist, dass in which mehr als ein Koeffizient angegeben wird
+  # erstellen wir noch Unterlisten in den Listen, sodass sich jede auf einen
+  # Koeffizienten bezieht
+  # Erstelle Unterlisten
   for(iestimator in conditional_COV_estimator) { 
     vt_conditional_list[[iestimator]] <- 
       setNames(vector("list",length(which_conditional)),
@@ -258,79 +287,77 @@ testvec_conditional <- function(
   }
   
   
-  ## Test vector vt, variance kappa_square, and dirV
+  ## Testvektor vt und Varianz kappa_square und dirV
   for(iestimator in conditional_COV_estimator) {
     
-    # Residual covariance matrix R
+    # R
     R <- R_list[[iestimator]]
     
-    # For all coefficients in which_conditional:
-    # Compute test matrix V for vt 
+    # für alle Koeffizienten in which_conditional gemeinsam:
+    # Testmatrix V für Testvektor vt bestimmen 
     V_conditional <- K_inv_list[[iestimator]] %*% 
       Ct.R_inv_list[[iestimator]]
     
     
-    # Compute variance kappa_square: K_inv * C' * R_inv * C * K_inv
-    # for not_bayesian
+    # Varianz kappa_square bestimmen: K_inv*C'*R_inv*C*K_inv
+    # für not_bayesian
     kappa_square_conditional_all_coeffs <- K_inv_list[[iestimator]] %*% 
       Ct.R_inv.C_list[[iestimator]] %*%
       K_inv_list[[iestimator]]
     
-    # Compute variance kappa_square: K_inv 
-    # for bayesian 
+    # Varianz kappa_square bestimmen: K_inv 
+    # für bayesian 
     bayesian_kappa_square_conditional_all_coeffs <- K_inv_list[[iestimator]]
     
     
     
     
-    # Assign entries per coefficient into the corresponding list elements
+    # Eintrag pro Koeffizient in das entsprechende Listenelement
     for (iwhich in which_conditional){
-      # Name of the coefficient for storing in the list
+      # Name des Koeffizienten zur Eintragung in Liste
       coef_name <- paste("coefficient", iwhich)
       
-      # Test vectors vt
+      # Testvektoren vt
       vt_conditional_list[[iestimator]][[coef_name]] <-
         splitRatio * matrix(V_conditional[iwhich,], nrow = 1)
       
-      # Variances kappa_square and dirV 
+      #Varianzen kappa_square und dirV 
       if("not_bayesian" %in% bayesian){
-        # Variance kappa_square := e_j' * K_inv * C' * R_inv * C * K_inv * e_j
+        # Varianz kappa_square:= e_j'*K_inv*C'*R_inv*C*K_inv*e_j
         kappa_square_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]] <- 
-          splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich]
+          splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich]                                    #?# hmm so ist das natürlich ein wenig ineffizient weil der ja immer die gesamte Matrix V berechnet und nicht direkt nur die für which relevanten Zeilen 
         
-        # dirV := R * v / kappa_square, where v = t(vt)
+        #dirV:= R*v/kappa_square wobei v=t(vt)
         dirV_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           kappa_square_conditional_list[[iestimator]][["not_bayesian"]][[coef_name]]} 
       
       
-      if("bayesian" %in% bayesian){ # as in selfmade implementation 
-        # Variance kappa_square := e_j' * K_inv * e_j
+      if("bayesian" %in% bayesian){
+        # Varianz kappa_square:= e_j'*K_inv*e_j
         kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
-          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]
+          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]                                     #?# hmm so ist das natürlich ein wenig ineffizient weil der ja immer die gesamte Matrix V berechnet und nicht direkt nur die für which relevanten Zeilen 
         
-        # dirV := R * v / kappa_square, where v = t(vt)
+        #dirV:= R*v/kappa_square wobei v=t(vt)
         dirV_conditional_list[[iestimator]][["bayesian"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           kappa_square_conditional_list[[iestimator]][["bayesian"]][[coef_name]]}
-
-        if("bayesian_corrected" %in% bayesian){ # as in paper (Rügamer et al., 2022)
-        # Variance kappa_square:= e_j'*K_inv*e_j
+      
+      if("bayesian_corrected" %in% bayesian){
+        # Varianz kappa_square:= e_j'*K_inv*e_j
         kappa_square_conditional_list[[iestimator]][["bayesian_corrected"]][[coef_name]] <- 
-          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]                                    
+          splitRatio^2 *bayesian_kappa_square_conditional_all_coeffs[iwhich,iwhich]                                     #?# hmm so ist das natürlich ein wenig ineffizient weil der ja immer die gesamte Matrix V berechnet und nicht direkt nur die für which relevanten Zeilen 
        
-        #dirV:= R*v/kappa_square_freq 
+        #dirV:= R*v/kappa_square_freq wobei v=t(vt)
         dirV_conditional_list[[iestimator]][["bayesian_corrected"]][[coef_name]] <- 
           R %*% t(vt_conditional_list[[iestimator]][[coef_name]])/
           (splitRatio^2 *kappa_square_conditional_all_coeffs[iwhich,iwhich])  }
       
     }
   }
-  
   result_list <- setNames(vector("list",3),c("vt_conditional_list",
                                              "kappa_square_conditional_list",
                                              "dirV_conditional_list"))
-  
   result_list$vt_conditional_list <- vt_conditional_list
   result_list$kappa_square_conditional_list <- kappa_square_conditional_list
   result_list$dirV_conditional_list <- dirV_conditional_list
