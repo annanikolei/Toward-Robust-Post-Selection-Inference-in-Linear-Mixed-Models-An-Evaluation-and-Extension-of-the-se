@@ -2,14 +2,11 @@
 # Simulation Study 3-Discussion: Conditional Fixed RE
 ################################################################################
 
-setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
-
 ## Install and load all necessary packages
 source("Project1_install_packages.R")
 
 ## Load selfmade implementation
-setwd("~/Documents/Forschung/Post-selection inference/Masterarbeit/selfmade package nachprogrammieren/GitHub_selective_inference")
-source("Hauptfunktion (analog zur mocasin Funktion).R")
+source("selfmade**.R")
 
 ## Load Simulation Study files
 setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
