@@ -119,7 +119,7 @@ pval_CI <- function(Tbs_survived, # All MC test statistics that fall within the
     
     # Two-sided p-value
     if(symmetric_selection == TRUE){
-      pval_two <- min(pval_right, 1 - pval_right)
+      pval_two <- 2* min(pval_right, 1 - pval_right)
     }
     if(symmetric_selection == FALSE){
       pval_two <-  as.numeric(
