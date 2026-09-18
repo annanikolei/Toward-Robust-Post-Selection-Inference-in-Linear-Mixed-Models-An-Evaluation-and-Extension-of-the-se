@@ -287,7 +287,7 @@ plot_SimStudy3_FixedRE
 
 ggsave("plot_SimStudy3_FixedRE_Conditional.png", 
        plot = plot_SimStudy3_FixedRE, 
-       dpi = 300, width = 16, height = 12, units = "in")
+       dpi = 300, width = 10, height = 6, units = "in")
 
 
 
