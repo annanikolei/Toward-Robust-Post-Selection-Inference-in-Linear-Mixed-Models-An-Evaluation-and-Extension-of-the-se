@@ -1,4 +1,4 @@
-# Repository for Simulation-Based Evaluation of Selective Inference in Linear Mixed Models: A Closer Look at the Approach of Rügamer et al. (2022)
+# Repository for Toward Robust Post-Selection Inference in Linear Mixed Models: An Evaluation and Extension of the selfmade Approach
 
 This repository contains the code accompanying our paper on **valid post-selection inference in linear mixed models**.
 
