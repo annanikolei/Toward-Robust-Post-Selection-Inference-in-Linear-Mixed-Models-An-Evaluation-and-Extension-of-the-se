@@ -6,7 +6,7 @@ source("helper_functions.R")
 source("CR-Standard_errors.R")
 source("CovarianceMatrix-Function.R")
 source("parallel_selective-inference-Function.R")
-source("Testvector-Funktions.R")
+source("Testvector-Functions.R")
 
 mocasin <- function(mod, # fit of the selected model
                     balanced = TRUE, # equal number of Level-1 units per cluster
