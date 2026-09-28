@@ -5,7 +5,6 @@ source("Project1_install_packages.R")
 source("selfmade**.R")
 
 ## Load Simulation Study 3 files
-setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
 source("SimStudy3_helper.R")
 source("RandomX_SimStudy3_dgp.R")
 source("SimStudy3_SelectionProcess.R")
