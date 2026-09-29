@@ -20,6 +20,7 @@ mocasin <- function(mod, # fit of the selected model
                     # event and one indicating whether convergence is adequate
                     this_y, # vector of observed y-values
                     B_MCsamples = 1000, # number of MC samples
+                    min_B_MCsamples = 0,
                     MC_distribution = NULL, # MC samples from
                                             # proposal distribution "proposal"
                                             # or from N(0,kappa_square)
@@ -477,6 +478,7 @@ mocasin <- function(mod, # fit of the selected model
                 dirV = dirV,
                 this_y = this_y,
                 B_MCsamples = B_MCsamples,
+                min_B_MCsamples = min_B_MCsamples,
                 checkFun = checkFun,
                 MC_distribution = MC_distribution,
                 symmetric_selection = symmetric_selection,
@@ -521,6 +523,7 @@ mocasin <- function(mod, # fit of the selected model
             dirV = dirV,
             this_y = this_y,
             B_MCsamples = B_MCsamples,
+            min_B_MCsamples = min_B_MCsamples,
             checkFun = checkFun,
             MC_distribution = MC_distribution,
             symmetric_selection = symmetric_selection,
@@ -569,6 +572,7 @@ if("conditional" %in% perspective){
              dirV = dirV,
              this_y = this_y,
              B_MCsamples = B_MCsamples,
+             min_B_MCsamples = min_B_MCsamples,
              checkFun = checkFun,
              MC_distribution = MC_distribution,
              symmetric_selection = symmetric_selection,
