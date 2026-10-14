@@ -118,8 +118,6 @@ results_10000_marginaleff <- do.call(rbind, results_10000)
 saveRDS(results_10000_marginaleff, "10000_marginaleff.RDS")
 
 
-
-
 results_10000_noteff <- vector("list", 10000)
 
 for (i in 1:10000) {
