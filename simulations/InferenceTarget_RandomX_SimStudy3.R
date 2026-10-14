@@ -142,6 +142,13 @@ mean_t_obs_eff <- results_10000_marginaleff %>%
     .groups = "drop"
   )
 
+sd_t_obs_eff <- results_10000_marginaleff %>%
+  group_by(estimator, coefficient) %>%
+  summarise(
+    sd_t_obs = sd(t_obs, na.rm = TRUE),
+    .groups = "drop"
+  )
+
 results_10000_marginalnoteff <- readRDS("10000_marginalnoteff.RDS")
 
 mean_t_obs_noteff <- results_10000_marginalnoteff %>%
@@ -151,6 +158,14 @@ mean_t_obs_noteff <- results_10000_marginalnoteff %>%
     .groups = "drop"
   )
 
-mean_t_obs_eff
-mean_t_obs_noteff
+sd_t_obs_noteff <- results_10000_marginalnoteff %>%
+  group_by(estimator, coefficient) %>%
+  summarise(
+    sd_t_obs = sd(t_obs, na.rm = TRUE),
+    .groups = "drop"
+  )
 
+mean_t_obs_eff
+sd_t_obs_eff
+mean_t_obs_noteff
+sd_t_obs_noteff/sd_t_obs_eff
