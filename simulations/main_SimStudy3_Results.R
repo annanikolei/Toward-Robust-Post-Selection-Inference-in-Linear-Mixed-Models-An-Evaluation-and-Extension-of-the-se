@@ -2,7 +2,7 @@
 source("Project1_install_packages.R")
 
 ## Load selfmade implementation
-source("selfmade**.R")
+source("Selfmade/selfmade**.R")
 
 ## Load Simulation Study 3 files
 source("SimStudy3_helper.R")
