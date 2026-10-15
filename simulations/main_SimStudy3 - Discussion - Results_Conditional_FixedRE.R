@@ -6,7 +6,7 @@
 source("Project1_install_packages.R")
 
 ## Load selfmade implementation
-source("selfmade**.R")
+source("Selfmade/selfmade**.R")
 
 ## Load Simulation Study files
 setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
