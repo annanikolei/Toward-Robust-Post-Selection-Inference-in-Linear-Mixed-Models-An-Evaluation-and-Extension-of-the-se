@@ -570,7 +570,7 @@ SimStudy3_CR2_Results$perspective <- ifelse(
 
 
 # -----------------------------
-# CR2 -- McCaffrey FALSE
+# CR2 -- McCaffrey TRUE
 # -----------------------------
 
 SimulationStudy3_CR2_MCCaffreyFALSE_all <- lapply(
@@ -841,8 +841,8 @@ results_all_conditions_df$perspective <- factor(
     "Marginal\n(efficient)",
     "Marginal\n(not eff)",
     "Marginal\n(eff) CR2",
+    "Marginal\n(not eff) CR2_MCCaffrey",
     "Marginal\n(not eff) CR2",
-    "Marginal\n(not eff) CR2\nStandard OLS",
     "Marginal\n(not eff) HC3",
     "fullCandidate"
   )
@@ -935,7 +935,6 @@ results_all_conditions_df_SimStudy3 <-
         "Marginal\n(not eff)",
         "Marginal\n(eff) CR2",
         "Marginal\n(not eff) CR2",
-        "Marginal\n(not eff) CR2\nStandard OLS",
         "Marginal\n(not eff) HC3",
         "Conditional\n(corrected)"
       ),
@@ -1057,3 +1056,4 @@ ggsave(
   height = 21,
   units = "in"
 )
+
