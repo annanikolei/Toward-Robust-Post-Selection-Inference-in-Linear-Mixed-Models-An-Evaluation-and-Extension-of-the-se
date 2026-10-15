@@ -1207,7 +1207,7 @@ SimStudy3_convergence <- do.call(rbind, lapply(c(SimulationStudy3,SimulationStud
 
 colMeans(SimStudy3_convergence[sapply(SimStudy3_convergence, is.numeric)], na.rm = F)
 
-0.0004666667/( 0.0004666667+ 189.8884666667)  # less than 0.001%
+5.331911e-04/( 5.331911e-04 +1.901220e+02  )  # less than 0.001%
 
 library(dplyr)
 
@@ -1215,11 +1215,10 @@ View(SimStudy3_convergence %>%
        group_by(working_model) %>%
        summarise(across(where(is.numeric), ~ mean(.x, na.rm = FALSE))))
 
-0.0004/(0.0004+ 200.9648) 
-0.0010/(0.0010+
-        365.8078)# less than 0.001%
+0.0004/(0.0004+ 201) 
+0.0011995202/(0.0011995202+365.6619)	# less than 0.001%
 0.0004/
-70.8144 # less than 0.001%
+70 # less than 0.001%
 
 ## monte carlo resampling process
 
@@ -1461,6 +1460,8 @@ plot_MCResampling_SimStudy3_Appendix
 ggsave("plot_MCResampling_SimStudy3_Appendix.png", 
        plot = plot_MCResampling_SimStudy3_Appendix, 
        dpi = 300, width =16, height = 6.5, units = "in")
+
+
 
 
 
