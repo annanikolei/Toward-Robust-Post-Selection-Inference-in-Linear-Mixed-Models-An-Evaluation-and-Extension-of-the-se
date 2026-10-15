@@ -38,7 +38,7 @@ mocasin <- function(mod, # fit of the selected model
                                                     # for the marginal perspective?
                                                     # and if so, which ones?
                                                     # FALSE, "CR0", "CR2"
-                    AdjMcCaffrey=TRUE, #boolean,if CR2 robust standard errors in not-efficient: robustness with adjument matrix by McCaffrey et al. (2001)
+                    AdjMcCaffrey=FALSE, #boolean,if CR2 robust standard errors in not-efficient: robustness with adjument matrix by McCaffrey et al. (2001)
                     marginal_COV_estimator = c("ModelEstimate", 
                                                "ICM",
                                                "supplied"), # which estimators
