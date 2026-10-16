@@ -827,6 +827,10 @@ plot_SimStudy4 <- ggplot(
 
 plot_SimStudy4
 
+results_all_conditions_df_SimStudy4[
+  which(is.na(results_all_conditions_df_SimStudy4$pval_two)),
+] # Identify results for which no MC samples survived the inference-region check
+
 
 ggsave(
   "plot_SimStudy4.png",
