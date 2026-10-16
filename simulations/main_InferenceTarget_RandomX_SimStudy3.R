@@ -5,11 +5,14 @@
 # iteration and b redrawn independently as well.
 # ==================
 
+# Start this script from the repository root.
+setwd("Selfmade")
+source("selfmade**.R")
+
+setwd("../simulations")
+
 ## Install and load all necessary packages
 source("Project1_install_packages.R")
-
-## Load selfmade implementation
-source("selfmade**.R")
 
 # Load SimStudy3-RandomX files
 source("SimStudy3_helper.R")
