@@ -917,12 +917,12 @@ SimStudy3_Results <- do.call(rbind, lapply(SimulationStudy3 ,
 )
 
 
-SimulationStudy3_marginaleff_CR2_X1234 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X1234_marginal(eff)CR2_R2_0.3_1000MC.RDS")
-SimulationStudy3_marginaleff_CR2_X123 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X123_marginal(eff)_CR2_R2_0.3_1000MC.RDS")
-SimulationStudy3_marginaleff_CR2_X124 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X124_marginal(eff)_CR2_R2_0.3_1000MC.RDS")
-SimulationStudy3_marginal_noteff_CR2_X1234 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X1234_marginal(not_eff)CR2_R2_0.3_1000MC.RDS")
-SimulationStudy3_marginal_noteff_CR2_X123 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X123_marginal(not_eff)_CR2_R2_0.3_1000MC.RDS")
-SimulationStudy3_marginal_noteff_CR2_X124 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy3_Results/SimStudy3_workingModel=X124_marginal(not_eff)_CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginaleff_CR2_X1234 <- readRDS("SimStudy3_workingModel=X1234_marginal(eff)CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginaleff_CR2_X123 <- readRDS("SimStudy3_workingModel=X123_marginal(eff)_CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginaleff_CR2_X124 <- readRDS("SimStudy3_workingModel=X124_marginal(eff)_CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginal_noteff_CR2_X1234 <- readRDS("SimStudy3_workingModel=X1234_marginal(not_eff)CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginal_noteff_CR2_X123 <- readRDS("SimStudy3_workingModel=X123_marginal(not_eff)_CR2_R2_0.3_1000MC.RDS")
+SimulationStudy3_marginal_noteff_CR2_X124 <- readRDS("SimStudy3_workingModel=X124_marginal(not_eff)_CR2_R2_0.3_1000MC.RDS")
 
 SimulationStudy3_marginalCR2 <- c(SimulationStudy3_marginaleff_CR2_X1234,
                                   SimulationStudy3_marginaleff_CR2_X123,
