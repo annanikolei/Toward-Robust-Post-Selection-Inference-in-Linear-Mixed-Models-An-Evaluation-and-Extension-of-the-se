@@ -436,7 +436,6 @@ for (i in start_iter:N) {
 
 ## conditional bayesian corrected
 #### X123
-setwd("SimStudy3_Results")
 N <- 1000
 
 save_file <- paste0(
