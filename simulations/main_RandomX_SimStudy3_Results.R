@@ -2,14 +2,15 @@
 # Simulation Study 3 under Random X: Results
 ################################################################################
 
-# Start this script from the repository root.
+warning("Start this script from the repository root.")
+
+## Install and load necessary packages
+source("simulations/Project1_install_packages.R")
+
 setwd("Selfmade")
 source("selfmade**.R")
 
 setwd("../simulations")
-
-## Install and load all necessary packages
-source("Project1_install_packages.R")
 
 ## Load Simulation Study 3 files
 source("SimStudy3_helper.R")
