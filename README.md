@@ -48,7 +48,7 @@ Similarly, extract `SimulationResults_supplied_D.zip` into `simulations/Simulati
 
 ## Reproduce simulations and figures
 
-The main script `simulations/main_SimStudy4_Results_originalSimulation.R` has two modes, controlled by `RUN_SIMULATIONS` near the top of the file. Start R with the repository root as the working directory and source the script, for example:
+The main scripts have two modes, controlled by `RUN_SIMULATIONS` near the top of the files. Start R with the repository root as the working directory and source the script, for example:
 
 `
 source("simulations/main_SimStudy1_Results.R")
