@@ -18,7 +18,20 @@ source("SimStudy1_dgp.R")
 source("SimStudy1_one_simulation.R")
 source("SimStudy1_simulation_study.R")
 
-setwd("SimStudy1_Results")
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "SimStudy1_Results"
+
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract SimStudy1_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 ## Run Simulation
 
 N <- 3000  # Number of Iterations
@@ -77,7 +90,7 @@ for(n_obs in c(990, 4830)){
 }
 
 
-
+}
 
 ### Results ####
 setwd("SimStudy1_Results")
