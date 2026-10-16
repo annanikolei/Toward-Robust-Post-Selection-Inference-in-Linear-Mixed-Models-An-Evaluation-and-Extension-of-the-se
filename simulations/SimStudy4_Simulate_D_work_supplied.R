@@ -3,6 +3,13 @@
 #                     for conditional perspective 
 ################################################################################
 
+# Start this script from the repository root.
+
+setwd("simulations")
+
+## Install and load all necessary packages
+source("Project1_install_packages.R")
+
 ## packages and functions
 source("SimStudy4_helper.R")
 source("SimStudy4_dgp.R")
