@@ -134,8 +134,8 @@ for (i in start_iter:N) {
 ################################################################################
 setwd("SimStudy4_Results")
 
-Discussion_SimulationStudy4_Naive_supplied <- c(readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy4_Results/Discussion_SimulationStudy4_marginal(not_eff)_Naive_supplied_500MC.RDS"),
-                                                readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy4_Results/Discussion_SimulationStudy4_marginal(eff)_Naive_supplied_500MC.RDS"))
+Discussion_SimulationStudy4_Naive_supplied <- c(readRDS("Discussion_SimulationStudy4_marginal(not_eff)_Naive_supplied_500MC.RDS"),
+                                                readRDS("Discussion_SimulationStudy4_marginal(eff)_Naive_supplied_500MC.RDS"))
 SimulationStudy4_Naive_supplied <- do.call(rbind, lapply(Discussion_SimulationStudy4_Naive_supplied, `[[`, 1))
 
 SimulationStudy4_Naive_supplied$pval_type <- "Naive"
