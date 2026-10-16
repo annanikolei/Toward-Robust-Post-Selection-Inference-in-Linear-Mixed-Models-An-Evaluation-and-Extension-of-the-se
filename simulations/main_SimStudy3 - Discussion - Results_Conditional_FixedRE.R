@@ -1,14 +1,15 @@
 ################################################################################
 # Simulation Study 3-Discussion: Conditional Fixed RE
 ################################################################################
-# Start this script from the repository root.
+warning("Start this script from the repository root.")
+
+## Install and load necessary packages
+source("simulations/Project1_install_packages.R")
+
 setwd("Selfmade")
 source("selfmade**.R")
 
 setwd("../simulations")
-
-## Install and load all necessary packages
-source("Project1_install_packages.R")
 
 ## Load Simulation Study files
 setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
