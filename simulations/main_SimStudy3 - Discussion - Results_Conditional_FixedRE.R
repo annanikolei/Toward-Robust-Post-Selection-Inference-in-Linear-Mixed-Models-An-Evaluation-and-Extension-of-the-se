@@ -1,7 +1,7 @@
 ################################################################################
 # Simulation Study 3-Discussion: Conditional Fixed RE
 ################################################################################
-warning("Start this script from the repository root.")
+message("Start this script from the repository root.")
 
 ## Install and load necessary packages
 source("simulations/Project1_install_packages.R")
