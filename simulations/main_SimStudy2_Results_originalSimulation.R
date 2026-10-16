@@ -506,9 +506,9 @@ SimulationStudy2_HC3_X123 <- readRDS("SimStudy2_workingModel=X123_HomoFalse_allp
 SimulationStudy2_no_HC_X124 <- readRDS("SimStudy2_workingModel=X124_HomoTrue_allperspectives_R2_0.3_1000MC.RDS")
 SimulationStudy2_HC3_X124 <- readRDS("SimStudy2_workingModel=X124_HomoFalse_allperspectives_R2_0.3_1000MC.RDS")
 
-SimulationStudy2_bayesian_corrected_X1234 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy2_Results/SimStudy2_workingModel=X1234_bayesian_corrected_R2_0.3_1000MC.RDS")
-SimulationStudy2_bayesian_corrected_X123 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy2_Results/SimStudy2_workingModel=X123_bayesian_corrected_R2_0.3_1000MC.RDS")
-SimulationStudy2_bayesian_corrected_X124 <- readRDS("~/Downloads/selective-inference-lmm-simulation-main/simulations/SimStudy2_Results/SimStudy2_workingModel=X124_bayesian_corrected_R2_0.3_1000MC.RDS")
+SimulationStudy2_bayesian_corrected_X1234 <- readRDS("SimStudy2_workingModel=X1234_bayesian_corrected_R2_0.3_1000MC.RDS")
+SimulationStudy2_bayesian_corrected_X123 <- readRDS("SimStudy2_workingModel=X123_bayesian_corrected_R2_0.3_1000MC.RDS")
+SimulationStudy2_bayesian_corrected_X124 <- readRDS("SimStudy2_workingModel=X124_bayesian_corrected_R2_0.3_1000MC.RDS")
 
 SimulationStudy2 <- c(SimulationStudy2_no_HC_X1234, 
                       SimulationStudy2_HC3_X1234,
