@@ -2,14 +2,14 @@
 # Simulation Study 4: Results
 ################################################################################
 
+## Install and load necessary packages
+source("simulations/Project1_install_packages.R")
+
 # Start this script from the repository root.
 setwd("Selfmade")
 source("selfmade**.R")
 
 setwd("../simulations")
-
-## Install and load all necessary packages
-source("Project1_install_packages.R")
 
 ## Load Simulation Study 4 files
 source("SimStudy4_helper.R")
