@@ -22,6 +22,20 @@ source("SimStudy3_SelectionProcess.R")
 source("RandomX_SimStudy3_one_simulation.R")
 source("RandomX_SimStudy3_simulation_study.R")
 
+RUN_SIMULATIONS <- FALSE
+results_dir <- "Results_InferenceTarget_RandomX_SimStudy3"
+
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract Results_InferenceTarget_RandomX_SimStudy3.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 
 # ------------------------------------------------------------------------------
 # one_simulation
@@ -108,7 +122,6 @@ one_simulation_RandomX <- function(n_obs = 40^2,
   return(df)
 }
 
-setwd("Results_InferenceTarget_RandomX_SimStudy3")
 
 
 results_10000 <- vector("list", 10000)
@@ -132,7 +145,7 @@ for (i in 1:10000) {
 results_10000_marginalnoteff<- do.call(rbind, results_10000_noteff)
 saveRDS(results_10000_marginalnoteff, "10000_marginalnoteff.RDS")
 
-
+}
 
 results_10000_marginaleff <- readRDS("10000_marginaleff.RDS")
 library(dplyr)
