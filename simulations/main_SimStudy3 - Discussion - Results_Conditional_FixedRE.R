@@ -27,16 +27,33 @@ dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 # load list_supplied_D_work
 load(paste0("SimulationResults_supplied_D/SIM3_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
+
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "Conditional_FixedRE_SimStudy3_Results"
+
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract Conditional_FixedRE_SimStudy3_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
+
 u_fixed <- SimStudy3_dgp_u(m = m,
                            D = matrix(c(2,0.2,0.1,
                                         0.2,1.5,0.2,
                                         0.1,0.2,1.5),
                                           nrow=3, byrow=T),
                            seed = 170)
+
+
 ########################
 # Run Simulations
 ########################
-setwd("Conditional_FixedRE_SimStudy3_Results")
 
 
 # conditional X124, target = rho
@@ -93,12 +110,11 @@ for (i in start_iter:N) {
   
   saveRDS(results_list, save_file)
 }
-
+}
 
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("Conditional_FixedRE_SimStudy3_Results")
 
 SimulationStudy3 <- readRDS(paste0(
   "FixedRE_rho_SimStudy3_workingModel=X124_conditional(corrected)_R2_0.3_1000MC.RDS"
