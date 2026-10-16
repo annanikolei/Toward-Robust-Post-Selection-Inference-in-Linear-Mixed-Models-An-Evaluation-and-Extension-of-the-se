@@ -1,11 +1,14 @@
 ################################################################################
 # Discussion - Naive Post-selection Inference with supplied - Simualtion Study 4
 ################################################################################
+# Start this script from the repository root.
+setwd("Selfmade")
+source("selfmade**.R")
+
+setwd("../simulations")
+
 ## Install and load all necessary packages
 source("Project1_install_packages.R")
-
-## Load selfmade implementation
-source("Selfmade/selfmade**.R")
 
 ## Load Simulation Study 4 files
 source("SimStudy4_helper.R")
