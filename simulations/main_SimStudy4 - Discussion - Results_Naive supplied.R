@@ -1,7 +1,7 @@
 ################################################################################
 # Discussion - Naive Post-selection Inference with supplied - Simualtion Study 4
 ################################################################################
-warning("Start this script from the repository root.")
+message("Start this script from the repository root.")
 
 ## Install and load necessary packages
 source("simulations/Project1_install_packages.R")
