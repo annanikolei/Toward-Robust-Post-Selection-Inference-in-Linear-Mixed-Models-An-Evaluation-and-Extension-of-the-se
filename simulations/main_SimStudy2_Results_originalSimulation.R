@@ -1,9 +1,15 @@
+################################################################################
+# Simulation Study 2: Results
+################################################################################
+
+# Start this script from the repository root.
+setwd("Selfmade")
+source("selfmade**.R")
+
+setwd("../simulations")
+
 ## Install and load all necessary packages
 source("Project1_install_packages.R")
-
-## Load selfmade implementation
-source("Selfmade/selfmade**.R")
-
 ## Load Simulation Study 2 files
 source("SimStudy2_helper.R")
 source("SimStudy2_dgp.R")
