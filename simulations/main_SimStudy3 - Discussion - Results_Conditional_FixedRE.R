@@ -12,7 +12,6 @@ source("selfmade**.R")
 setwd("../simulations")
 
 ## Load Simulation Study files
-setwd("~/Downloads/selective-inference-lmm-simulation-main/simulations")
 source("SimStudy3_helper.R")
 source("SimStudy3_Discussion_dgp_Conditional_FixedRE.R")
 source("SimStudy3_SelectionProcess.R")
