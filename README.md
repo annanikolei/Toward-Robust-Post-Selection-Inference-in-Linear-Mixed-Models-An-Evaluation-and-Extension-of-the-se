@@ -38,10 +38,10 @@ The main scripts are intended to be started from the repository root. For exampl
 
 ## Prepare the supplied result files
 
-The ZIP archives in `simulations/` contain result files. Before running a main results script, extract the relevant archive into a folder with the same name as the archive, without `.zip`. For example, extract `SimStudy1_Results.zip` so that the files are in:
+The ZIP archives in `simulations/` contain result files. Before running a main results script, extract the relevant archive into a folder with the same name as the archive, without `.zip`. For example, extract `SimStudy2_Results.zip` so that the files are in:
 
 `
-simulations/SimStudy1_Results/
+simulations/SimStudy2_Results/
 `
 
 Similarly, extract `SimulationResults_supplied_D.zip` into `simulations/SimulationResults_supplied_D/`. 
