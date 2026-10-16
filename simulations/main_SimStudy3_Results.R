@@ -30,10 +30,23 @@ dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 load(paste0("SimulationResults_supplied_D/SIM3_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "SimStudy3_Results"
+
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract SimStudy3_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 ########################
 # Run Simulations
 ########################
-setwd("SimStudy3_Results")
 #######################
 # CR2 correction
 #######################
@@ -884,11 +897,11 @@ for (i in start_iter:N) {
   saveRDS(results_list, save_file)
 }
 
-
+}
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("SimStudy3_Results")
+
 
 SimulationStudy3_no_HC_X1234 <- readRDS("SimStudy3_workingModel=X1234_no_HC_correction_allperspectives_R2_0.3_1000MC.RDS")
 SimulationStudy3_HC3_X1234 <- readRDS("SimStudy3_workingModel=X1234_HC3_marginal(not_eff)_R2_0.3_1000MC.RDS")
