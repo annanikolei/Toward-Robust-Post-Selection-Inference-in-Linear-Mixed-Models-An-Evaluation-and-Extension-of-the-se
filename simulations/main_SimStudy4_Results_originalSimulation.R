@@ -1,3 +1,7 @@
+################################################################################
+# Simulation Study 4: Results
+################################################################################
+
 # Start this script from the repository root.
 setwd("Selfmade")
 source("selfmade**.R")
