@@ -2,14 +2,15 @@
 # Simulation Study 2: Results
 ################################################################################
 
-# Start this script from the repository root.
+warning("Start this script from the repository root.")
+
+## Install and load necessary packages
+source("simulations/Project1_install_packages.R")
+
 setwd("Selfmade")
 source("selfmade**.R")
 
 setwd("../simulations")
-
-## Install and load all necessary packages
-source("Project1_install_packages.R")
 ## Load Simulation Study 2 files
 source("SimStudy2_helper.R")
 source("SimStudy2_dgp.R")
