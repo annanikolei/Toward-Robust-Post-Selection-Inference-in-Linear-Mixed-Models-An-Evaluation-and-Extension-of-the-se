@@ -28,11 +28,23 @@ dgp_X_output <- readRDS("dgp_X_output_n_obs=1600_m=40.RDS")
 # load list_supplied_D_work
 load(paste0("SimulationResults_supplied_D/SIM2_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "SimStudy2_Results"
 
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract SimStudy2_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 ########################
 # Run Simulations
 ########################
-setwd("SimStudy2_Results")
 
 ## All perspectives together 
 N <- 1000
@@ -546,11 +558,10 @@ saveRDS(SimStudy2_convergence, "SimStudy2_convergence_singular_info_allcondition
 saveRDS(SimStudy2_Results_bayesian_corrected,"SimStudy2_pvalues_bayesian_corrected_R2_0.3_1000MC.RDS")
 saveRDS(SimStudy2_convergence_bayesian_corrected, "SimStudy2_convergence_singular_info_bayesian_corrected_R2_0.3_1000MC.RDS")
 
-
+}
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("SimStudy2_Results")
 SimStudy2_Results <- rbind(readRDS("SimStudy2_pvalues_bayesian_corrected_R2_0.3_1000MC.RDS"),
                            readRDS("SimStudy2_pvalues_MCresamplings_allconditions_R2_0.3_1000MC.RDS"))
 
