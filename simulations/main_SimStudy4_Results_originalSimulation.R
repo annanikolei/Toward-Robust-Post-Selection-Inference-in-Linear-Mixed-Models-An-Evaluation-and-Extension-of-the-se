@@ -2,10 +2,11 @@
 # Simulation Study 4: Results
 ################################################################################
 
+warning("Start this script from the repository root.")
+
 ## Install and load necessary packages
 source("simulations/Project1_install_packages.R")
 
-# Start this script from the repository root.
 setwd("Selfmade")
 source("selfmade**.R")
 
