@@ -23,11 +23,23 @@ source("RandomX_SimStudy3_simulation_study.R")
 
 n_obs = 40^2 ; m = 40
 
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "RandomX_SimStudy3_Results"
 
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract RandomX_SimStudy3_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 ########################
 # Run Simulations
 ########################
-setwd("RandomX_SimStudy3_Results")
 N <- 1000
 
 
@@ -489,11 +501,10 @@ SimulationStudy3 <- c(SimulationStudy3_no_HC_X1234,
                       SimulationStudy3_HC3_X1234)
 saveRDS(SimulationStudy3,paste0("RandomX_SimStudy3_workingModel=X1234_R2=",R_squared,"_1000MC.RDS"))
 
-
+}
 ################################################################################
 ## QQ-Plots, Convergence ##
 ################################################################################
-setwd("RandomX_SimStudy3_Results")
 
 R_squared_values <- c("0.3", "great")
 
