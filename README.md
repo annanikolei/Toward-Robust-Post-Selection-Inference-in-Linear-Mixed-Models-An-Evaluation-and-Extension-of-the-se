@@ -15,6 +15,8 @@ This repository contains the code accompanying our paper on **valid post-selecti
 * `illustrative_figures/` *(optional, if you use it)*
   Code for generating conceptual/illustrative figures used in the paper.
 
+* Supplementary Material. The supplementary material is provided in the file Supplement.pdf
+
 ## Reproducibility
 
 * The `main_...` scripts in `simulations/` reproduce the simulation studies.
