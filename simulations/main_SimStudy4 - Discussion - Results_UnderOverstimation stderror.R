@@ -32,12 +32,25 @@ dgp_X_output <- readRDS("dgp_X_output_Sim4_n_obs=1600_m=40.RDS")
 load(paste0("SimulationResults_supplied_D/SIM4_list_supplied_D_work_fullrandom=(Intercept)X2X4_n=400_Rsquared=",R_squared,"_nrsamples=10000.RData"))
 
 
+RUN_SIMULATIONS <- FALSE 
+results_dir <- "SimStudy4_Results"
+
+if (RUN_SIMULATIONS && !dir.exists(results_dir)) {
+  dir.create(results_dir, recursive = TRUE)
+}
+
+if (!dir.exists(results_dir)) {
+  stop("Results folder not found. Extract SimStudy4_Results.zip first.")
+}
+
+setwd(results_dir)
+
+if (RUN_SIMULATIONS) {
 
 ################################################################################
 ## Run the Simulation ##
 ################################################################################
 
-setwd("SimStudy4_Results")
 
 # Number of iterations
 N <- 1000
@@ -142,12 +155,11 @@ for (i in start_iter:N) {
 
 
 
-
+}
 
 ################################################################################
 ## QQ-Plots, hist, standard error ##
 ################################################################################
-setwd("SimStudy4_Results")
 
 SimulationStudy4_underestimation <- readRDS("Discussion_SimulationStudy4_underestimation_stderror.RDS")
 SimulationStudy4_overestimation <- readRDS("Discussion_SimulationStudy4_overestimation_stderror.RDS")
