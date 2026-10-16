@@ -44,7 +44,7 @@ The ZIP archives in `simulations/` contain result files. Before running a main r
 simulations/SimStudy1_Results/
 `
 
-Similarly, extract `SimStudy2_Results.zip`, `SimStudy3_Results.zip`, and `SimStudy4_Results.zip` into `simulations/SimStudy2_Results/`, `simulations/SimStudy3_Results/`, and `simulations/SimStudy4_Results/`. Extract `SimulationResults_supplied_D.zip` into `simulations/SimulationResults_supplied_D/`. 
+Similarly, extract `SimulationResults_supplied_D.zip` into `simulations/SimulationResults_supplied_D/`. 
 
 ## Reproduce simulations and figures
 
