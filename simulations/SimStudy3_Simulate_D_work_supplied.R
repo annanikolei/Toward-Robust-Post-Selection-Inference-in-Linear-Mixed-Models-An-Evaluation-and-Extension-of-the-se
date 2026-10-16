@@ -135,7 +135,8 @@ list_supplied_D_work <- lapply(Simulation_supplied_D, function(model_list) {
 list_convergence <- lapply(Simulation_supplied_D[["R_squared = 0.3"]], function(x) x$counter_convergence_issues)
 list_singular<- lapply(Simulation_supplied_D[["R_squared = 0.3"]], function(x) x$counter_singular_issues)
 
-setwd("SimulationResults_supplied_D")
+results_dir <- dir.create("SimulationResults_supplied_D",recursive = TRUE)
+ setwd(results_dir)
 
 save(list_supplied_D_work, 
      file = "SIM3_list_supplied_D_work_full=X1X2X3X4_interesting=X3X4_n=400_Rsquared=0.3_nrsamples=10000.RData")
