@@ -48,13 +48,14 @@ Similarly, extract `SimStudy2_Results.zip`, `SimStudy3_Results.zip`, and `SimStu
 
 ## Reproduce simulations and figures
 
-The `main_...` scripts contain simulation code followed by result processing and figure generation. Running a main script may take a long time because it runs the simulations before creating the figures. From the repository root, for example:
+The main script `simulations/main_SimStudy4_Results_originalSimulation.R` has two modes, controlled by `RUN_SIMULATIONS` near the top of the file. Start R with the repository root as the working directory and source the script, for example:
 
 `
 source("simulations/main_SimStudy1_Results.R")
 `
 
-The result ZIP files provide precomputed simulation outputs. The current main scripts do not provide a single `RUN_SIMULATIONS` switch; to generate figures from the supplied results without rerunning simulations, skip the simulation section of the relevant main script and run its result-processing and plotting section. The supplied result files must first be extracted as described above.
+- **Create figures from supplied results:** leave `RUN_SIMULATIONS <- FALSE`. First extract `SimStudy1_Results.zip` into `simulations/SimStudy1_Results/` and `SimulationResults_supplied_D.zip` into `simulations/SimulationResults_supplied_D/`.
+- **Run the simulations and then create figures:** set `RUN_SIMULATIONS <- TRUE`. The script creates `simulations/SimStudy1_Results/` if needed and saves simulation results there. The supplied-D results must still be extracted as described above.
 
 ## Simulation scripts
 
